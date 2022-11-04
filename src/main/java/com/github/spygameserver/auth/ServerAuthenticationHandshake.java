@@ -1,5 +1,8 @@
 package com.github.spygameserver.auth;
 
+import com.github.spygameserver.database.ConnectionHandler;
+import com.github.spygameserver.database.impl.AuthenticationDatabase;
+import com.github.spygameserver.database.table.AuthenticationTable;
 import com.github.spygameserver.util.ExceptionHandling;
 
 import java.io.BufferedInputStream;
@@ -51,35 +54,25 @@ public class ServerAuthenticationHandshake {
     private static ByteOrder BYTE_ORDER = ByteOrder.BIG_ENDIAN; */
 
     private final Socket playerConnection;
-    private final Connection databaseConnection;
+    private final AuthenticationTable authenticationTable;
+    private final ConnectionHandler connectionHandler;
+
     private final SecureRandom secureRandom;
 
-    public ServerAuthenticationHandshake(Socket playerConnection, Connection databaseConnection) {
+    public ServerAuthenticationHandshake(Socket playerConnection, AuthenticationTable authenticationTable,
+                                         ConnectionHandler connectionHandler) {
         this.playerConnection = playerConnection;
-        this.databaseConnection = databaseConnection;
+        this.authenticationTable = authenticationTable;
+        this.connectionHandler = connectionHandler;
+
         this.secureRandom = new SecureRandom();
     }
 
     public String receiveHello(int playerId) {
-        String query = "SELECT salt, verifier FROM test_player_authentication WHERE player_id=?";
+        PlayerAuthenticationData playerAuthenticationData = authenticationTable
+                .getPlayerAuthenticationRecord(connectionHandler, playerId);
 
-        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement(query)) {
-            preparedStatement.setInt(1, playerId);
-
-            ResultSet authenticationDataResultSet = preparedStatement.executeQuery();
-            boolean hasAuthenticationRecord = authenticationDataResultSet.next();
-            ExceptionHandling.closeQuietly(authenticationDataResultSet);
-
-            if (!hasAuthenticationRecord) {
-                return "bad_record_mac";
-            }
-
-            return "Success!";
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-
-        return "Could not connect to database.";
+        return playerAuthenticationData != null ? "Success!" : "bad_record_mac";
     }
 
 }

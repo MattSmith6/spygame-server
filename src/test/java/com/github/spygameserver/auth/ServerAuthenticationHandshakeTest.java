@@ -97,7 +97,7 @@ public class ServerAuthenticationHandshakeTest {
         failIfNotSetup();
 
         ServerAuthenticationHandshake serverAuthenticationHandshake = new ServerAuthenticationHandshake(
-                null, authenticationConnectionHandler.getConnection());
+                null, authenticationTable, authenticationConnectionHandler);
 
         String successfulHelloHandshake = serverAuthenticationHandshake.receiveHello(1);
         Assertions.assertEquals(successfulHelloHandshake, "Success!");
