@@ -59,10 +59,10 @@ public class ServerAuthenticationHandshakeTest {
     }
 
     private void insertTestDataIfNecessary() {
-        boolean wasTableCreated = authenticationTable.createTableIfNotExists(authenticationConnectionHandler);
+        boolean hasCreatedAnyTables = authenticationDatabase.hasCreatedAnyTables();
 
-        // We don't need to insert any data, the table already existed, so we can exit early
-        if (wasTableCreated) {
+        // We don't need to insert any data, the tables already exist, so we can exit early
+        if (hasCreatedAnyTables) {
             return;
         }
 
