@@ -2,3 +2,5 @@
 .DS_Store
 src/main/resources/
 src/test/resources/
+target/
+dependency-reduced-pom.xml
