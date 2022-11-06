@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class AuthenticationTable extends AbstractTable {
 
@@ -31,8 +30,8 @@ public class AuthenticationTable extends AbstractTable {
 
         boolean wasTableCreated = false;
 
-        try (Statement statement = connection.createStatement()) {
-            wasTableCreated = statement.execute(createTableIfNotExistsQuery);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(createTableIfNotExistsQuery)) {
+            wasTableCreated = preparedStatement.execute();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

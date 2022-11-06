@@ -12,9 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ServerAuthenticationHandshakeTest {
+
+    private static final Logger LOG = Logger.getLogger(ServerAuthenticationHandshakeTest.class.getName());
 
     private static final String FILE_RESOURCE_PATH = "src/test/resources";
     private static final String DATABASE_CREDENTIALS_FILE = "database_credentials.properties";
@@ -22,7 +25,6 @@ public class ServerAuthenticationHandshakeTest {
     private boolean isSetup = true;
     private String errorOnSetupMessage = null;
 
-    private AuthenticationDatabase authenticationDatabase;
     private AuthenticationTable authenticationTable;
 
     private ConnectionHandler authenticationConnectionHandler;
@@ -45,12 +47,12 @@ public class ServerAuthenticationHandshakeTest {
         }
 
         DatabaseConnectionManager databaseConnectionManager = new DatabaseConnectionManager(databaseCredentialsProcessor);
-        authenticationDatabase = new AuthenticationDatabase(databaseConnectionManager, true);
+        AuthenticationDatabase authenticationDatabase = new AuthenticationDatabase(databaseConnectionManager, true);
         authenticationTable = authenticationDatabase.getAuthenticationTable();
 
         authenticationConnectionHandler = authenticationDatabase.getNewConnectionHandler(false);
 
-        if (authenticationDatabase.getAuthenticationTable() == null) {
+        if (authenticationConnectionHandler.getConnection() == null) {
             isSetup = false;
             errorOnSetupMessage = "Could not establish connection to database.";
         }
@@ -59,10 +61,8 @@ public class ServerAuthenticationHandshakeTest {
     }
 
     private void insertTestDataIfNecessary() {
-        boolean hasCreatedAnyTables = authenticationDatabase.hasCreatedAnyTables();
-
         // We don't need to insert any data, the tables already exist, so we can exit early
-        if (hasCreatedAnyTables) {
+        if (!authenticationTable.wasTableCreated()) {
             return;
         }
 

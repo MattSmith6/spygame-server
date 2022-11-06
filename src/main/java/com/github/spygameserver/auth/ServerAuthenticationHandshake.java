@@ -1,24 +1,10 @@
 package com.github.spygameserver.auth;
 
 import com.github.spygameserver.database.ConnectionHandler;
-import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.table.AuthenticationTable;
-import com.github.spygameserver.util.ExceptionHandling;
 
-import java.io.BufferedInputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.math.BigInteger;
 import java.net.Socket;
-import java.nio.ByteOrder;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class ServerAuthenticationHandshake {
 

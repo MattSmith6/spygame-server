@@ -11,7 +11,7 @@ public class AuthenticationDatabase extends AbstractDatabase {
         super(databaseConnectionManager, useTestTables);
 
         this.authenticationTable = new AuthenticationTable(useTestTables);
-        this.hasCreatedAnyTables = initialize(authenticationTable);
+        initialize(authenticationTable);
     }
 
     public AuthenticationTable getAuthenticationTable() {
