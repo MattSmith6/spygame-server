@@ -20,7 +20,7 @@ public abstract class AbstractDatabase {
 
     // Initialize all tables by creating them, if necessary
     protected void initialize(AbstractTable... tables) {
-        ConnectionHandler connectionHandler = getNewConnectionHandler(false);
+        ConnectionHandler connectionHandler = getUncheckedConnectionHandler(false);
 
         for (AbstractTable table : tables) {
             table.initialize(connectionHandler);
@@ -39,11 +39,17 @@ public abstract class AbstractDatabase {
         }
     }
 
-    public ConnectionHandler getNewConnectionHandler(boolean shouldCloseConnectionAfterUsed) {
-        throwExceptionIfUninitialized();
+    private ConnectionHandler getUncheckedConnectionHandler(boolean shouldCloseConnectionAfterUsed) {
         Connection connection = databaseConnectionManager.createNewConnection();
 
         return new ConnectionHandler(connection, shouldCloseConnectionAfterUsed);
+    }
+
+    public ConnectionHandler getNewConnectionHandler(boolean shouldCloseConnectionAfterUsed) {
+        throwExceptionIfUninitialized();
+
+        // Now that we've thrown an exception, this is no longer unchecked
+        return getUncheckedConnectionHandler(shouldCloseConnectionAfterUsed);
     }
 
 }

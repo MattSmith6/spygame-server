@@ -55,6 +55,7 @@ public class ServerAuthenticationHandshake {
     }
 
     public String receiveHello(int playerId) {
+        authenticationTable.isTableEmpty(connectionHandler);
         PlayerAuthenticationData playerAuthenticationData = authenticationTable
                 .getPlayerAuthenticationRecord(connectionHandler, playerId);
 

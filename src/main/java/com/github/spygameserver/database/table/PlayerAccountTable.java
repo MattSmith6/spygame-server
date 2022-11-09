@@ -20,20 +20,18 @@ public class PlayerAccountTable extends AbstractTable {
     }
 
     @Override
-    protected boolean createTableIfNotExists(ConnectionHandler connectionHandler) {
+    protected void createTableIfNotExists(ConnectionHandler connectionHandler) {
         Connection connection = connectionHandler.getConnection();
         String createTableQuery = String.format(CREATE_TABLE_QUERY, NON_TESTING_TABLE_NAME,
                 AccountVerificationStatus.toSQLStringifiedEnum());
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(createTableQuery)) {
-            return preparedStatement.execute();
+            preparedStatement.execute();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
-        return false;
+        connectionHandler.closeConnectionIfNecessary();
     }
-
-
 
 }

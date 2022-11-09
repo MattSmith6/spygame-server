@@ -24,20 +24,17 @@ public class AuthenticationTable extends AbstractTable {
     }
 
     @Override
-    public boolean createTableIfNotExists(ConnectionHandler connectionHandler) {
+    public void createTableIfNotExists(ConnectionHandler connectionHandler) {
         Connection connection = connectionHandler.getConnection();
         String createTableIfNotExistsQuery = formatQuery(CREATE_TABLE_QUERY);
 
-        boolean wasTableCreated = false;
-
         try (PreparedStatement preparedStatement = connection.prepareStatement(createTableIfNotExistsQuery)) {
-            wasTableCreated = preparedStatement.execute();
+            preparedStatement.execute();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
         connectionHandler.closeConnectionIfNecessary();
-        return wasTableCreated;
     }
 
     public void addPlayerAuthenticationRecord(ConnectionHandler connectionHandler, PlayerAuthenticationData playerAuthenticationData) {
@@ -49,7 +46,7 @@ public class AuthenticationTable extends AbstractTable {
             preparedStatement.setString(2, playerAuthenticationData.getSalt());
             preparedStatement.setString(3, playerAuthenticationData.getVerifier());
 
-            preparedStatement.execute();
+            preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

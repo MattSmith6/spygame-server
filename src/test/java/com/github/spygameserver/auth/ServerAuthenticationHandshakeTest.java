@@ -6,8 +6,10 @@ import com.github.spygameserver.database.DatabaseCredentialsProcessor;
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.table.AuthenticationTable;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -17,7 +19,7 @@ import java.util.logging.Logger;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ServerAuthenticationHandshakeTest {
 
-    private static final Logger LOG = Logger.getLogger(ServerAuthenticationHandshakeTest.class.getName());
+    public static final Logger LOG = Logger.getLogger(ServerAuthenticationHandshakeTest.class.getName());
 
     private static final String FILE_RESOURCE_PATH = "src/test/resources";
     private static final String DATABASE_CREDENTIALS_FILE = "database_credentials.properties";
@@ -26,7 +28,6 @@ public class ServerAuthenticationHandshakeTest {
     private String errorOnSetupMessage = null;
 
     private AuthenticationTable authenticationTable;
-
     private ConnectionHandler authenticationConnectionHandler;
 
     @BeforeAll
@@ -61,8 +62,8 @@ public class ServerAuthenticationHandshakeTest {
     }
 
     private void insertTestDataIfNecessary() {
-        // We don't need to insert any data, the tables already exist, so we can exit early
-        if (!authenticationTable.wasTableCreated()) {
+        // If the table is not empty, we can exit out early
+        if (!authenticationTable.isTableEmpty(authenticationConnectionHandler)) {
             return;
         }
 
@@ -75,6 +76,11 @@ public class ServerAuthenticationHandshakeTest {
                 "EA53D15C 1AFF87B2 B9DA6E04 E058AD51 CC72BFC9 033B564E 26480D78\n" +
                 "E955A5E2 9E7AB245 DB2BE315 E2099AFB"
         );
+
+        LOG.info("Start example data");
+        LOG.info(exampleSalt);
+        LOG.info(exampleVerifier);
+        LOG.info("End example data");
 
         PlayerAuthenticationData playerAuthenticationData = new PlayerAuthenticationData(examplePlayerId,
                 exampleSalt, exampleVerifier);
@@ -96,14 +102,15 @@ public class ServerAuthenticationHandshakeTest {
     public void testPlayerId() {
         failIfNotSetup();
 
+        authenticationTable.isTableEmpty(authenticationConnectionHandler);
         ServerAuthenticationHandshake serverAuthenticationHandshake = new ServerAuthenticationHandshake(
                 null, authenticationTable, authenticationConnectionHandler);
 
         String successfulHelloHandshake = serverAuthenticationHandshake.receiveHello(1);
-        Assertions.assertEquals(successfulHelloHandshake, "Success!");
+        Assertions.assertEquals("Success!", successfulHelloHandshake);
 
         String unsuccessfulHelloHandshake = serverAuthenticationHandshake.receiveHello(2);
-        Assertions.assertEquals(unsuccessfulHelloHandshake, "bad_record_mac");
+        Assertions.assertEquals("bad_record_mac", unsuccessfulHelloHandshake);
     }
 
     @AfterAll
