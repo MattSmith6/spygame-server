@@ -77,11 +77,6 @@ public class ServerAuthenticationHandshakeTest {
                 "E955A5E2 9E7AB245 DB2BE315 E2099AFB"
         );
 
-        LOG.info("Start example data");
-        LOG.info(exampleSalt);
-        LOG.info(exampleVerifier);
-        LOG.info("End example data");
-
         PlayerAuthenticationData playerAuthenticationData = new PlayerAuthenticationData(examplePlayerId,
                 exampleSalt, exampleVerifier);
 
@@ -102,7 +97,6 @@ public class ServerAuthenticationHandshakeTest {
     public void testPlayerId() {
         failIfNotSetup();
 
-        authenticationTable.isTableEmpty(authenticationConnectionHandler);
         ServerAuthenticationHandshake serverAuthenticationHandshake = new ServerAuthenticationHandshake(
                 null, authenticationTable, authenticationConnectionHandler);
 
