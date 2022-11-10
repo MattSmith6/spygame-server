@@ -16,10 +16,12 @@ public class PlayerEncryptionKey {
 
     private static final String CIPHER_TYPE = "AES";
 
+    private final int playerId;
     private final SecretKey secretKey;
     private final Cipher cipher;
 
-    public PlayerEncryptionKey(byte[] premasterSecret) {
+    public PlayerEncryptionKey(int playerId, byte[] premasterSecret) {
+        this.playerId = playerId;
         this.secretKey = new SecretKeySpec(premasterSecret, CIPHER_TYPE);
 
         Cipher cipher = null;
