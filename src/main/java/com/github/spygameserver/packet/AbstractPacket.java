@@ -1,7 +1,11 @@
 package com.github.spygameserver.packet;
 
+import com.github.spygameserver.auth.PlayerEncryptionKey;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
 
 public abstract class AbstractPacket {
 
@@ -15,6 +19,19 @@ public abstract class AbstractPacket {
         return this.packetId;
     }
 
-    public abstract void process(BufferedReader bufferedReader, BufferedWriter bufferedWriter);
+    public abstract void process(PlayerEncryptionKey playerEncryptionKey, BufferedReader bufferedReader,
+                                 BufferedWriter bufferedWriter);
+
+    protected void writeJSONObjectToOutput(PlayerEncryptionKey playerEncryptionKey, JSONObject jsonObject,
+                                           BufferedWriter bufferedWriter) throws IOException {
+        String encryptedObject = playerEncryptionKey.encryptJSONObject(jsonObject);
+        bufferedWriter.write(encryptedObject);
+    }
+
+    protected JSONObject readJSONObjectFromInput(PlayerEncryptionKey playerEncryptionKey,
+                                                 BufferedReader bufferedReader) throws IOException {
+        String readObject = bufferedReader.readLine();
+        return playerEncryptionKey.decryptJSONObject(readObject);
+    }
 
 }

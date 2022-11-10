@@ -39,15 +39,13 @@ public class ServerAuthenticationHandshake {
 
     private static ByteOrder BYTE_ORDER = ByteOrder.BIG_ENDIAN; */
 
-    private final Socket playerConnection;
     private final AuthenticationTable authenticationTable;
     private final ConnectionHandler connectionHandler;
 
     private final SecureRandom secureRandom;
 
-    public ServerAuthenticationHandshake(Socket playerConnection, AuthenticationTable authenticationTable,
+    public ServerAuthenticationHandshake(AuthenticationTable authenticationTable,
                                          ConnectionHandler connectionHandler) {
-        this.playerConnection = playerConnection;
         this.authenticationTable = authenticationTable;
         this.connectionHandler = connectionHandler;
 
