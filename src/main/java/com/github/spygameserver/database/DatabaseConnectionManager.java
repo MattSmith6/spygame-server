@@ -8,24 +8,18 @@ import java.sql.SQLException;
 // to open a connection pool, where connections are shared between a certain number of threads
 public class DatabaseConnectionManager {
 
-    private final DatabaseCredentialsProcessor databaseCredentialsProcessor;
+    private final String databaseConnectionUrl;
+    private final String username;
+    private final String password;
 
     public DatabaseConnectionManager(DatabaseCredentialsProcessor databaseCredentialsProcessor) {
-        this.databaseCredentialsProcessor = databaseCredentialsProcessor;
+        this.databaseConnectionUrl = databaseCredentialsProcessor.getDatabaseConnectionUrl();
+        this.username = databaseCredentialsProcessor.getUsername();
+        this.password = databaseCredentialsProcessor.getPassword();
     }
 
-    public Connection createNewConnection() {
-        String databaseConnectionUrl = databaseCredentialsProcessor.getDatabaseConnectionUrl();
-        String username = databaseCredentialsProcessor.getUsername();
-        String password = databaseCredentialsProcessor.getPassword();
-
-        try {
-            return DriverManager.getConnection(databaseConnectionUrl, username, password);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-
-        return null;
+    public Connection createNewConnection() throws SQLException {
+        return DriverManager.getConnection(databaseConnectionUrl, username, password);
     }
 
 }

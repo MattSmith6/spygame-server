@@ -24,4 +24,16 @@ public class PlayerAuthenticationData {
         return verifier;
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof PlayerAuthenticationData)) {
+            return false;
+        }
+
+        PlayerAuthenticationData otherAuthenticationData = (PlayerAuthenticationData) other;
+
+        return getPlayerId() == otherAuthenticationData.getPlayerId() && getSalt().equals(otherAuthenticationData.getSalt())
+                && getVerifier().equals(otherAuthenticationData.getVerifier());
+    }
+
 }

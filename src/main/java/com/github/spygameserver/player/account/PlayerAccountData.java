@@ -35,4 +35,17 @@ public class PlayerAccountData {
         this.accountVerificationStatus = accountVerificationStatus;
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof PlayerAccountData)) {
+            return false;
+        }
+
+        PlayerAccountData otherAccountData = (PlayerAccountData) other;
+
+        return getPlayerId() == otherAccountData.getPlayerId() && getEmail().equals(otherAccountData.getEmail())
+                && getUsername().equals(otherAccountData.getUsername())
+                && getAccountVerificationStatus() == otherAccountData.getAccountVerificationStatus();
+    }
+
 }

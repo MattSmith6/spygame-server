@@ -3,6 +3,7 @@ package com.github.spygameserver.database;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Properties;
 
@@ -35,8 +36,8 @@ public class DatabaseCredentialsProcessor {
             return;
         }
 
-        try {
-            properties.load(Files.newInputStream(file.toPath()));
+        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+            properties.load(inputStream);
         } catch (IOException ex) {
             // This should never occur, as we already checked if the file does not exist
             ex.printStackTrace();
@@ -53,7 +54,9 @@ public class DatabaseCredentialsProcessor {
             setProperty(USERNAME_PATH);
             setProperty(PASSWORD_PATH);
 
-            properties.store(new FileWriter(file), "Auto-generated, configure this file for database connections");
+            try (FileWriter fileWriter = new FileWriter(file)) {
+                properties.store(fileWriter, "Auto-generated, configure this file for database connections");
+            }
         } catch (IOException ex) {
             ex.printStackTrace();
         }

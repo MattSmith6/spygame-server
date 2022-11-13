@@ -5,6 +5,7 @@ import com.github.spygameserver.database.DatabaseConnectionManager;
 import com.github.spygameserver.database.table.AbstractTable;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 public abstract class AbstractDatabase {
 
@@ -34,15 +35,20 @@ public abstract class AbstractDatabase {
 
     protected void throwExceptionIfUninitialized() {
         if (!isInitialized) {
-            throw new RuntimeException("Database is not initialized. Call the initialize method in the constructor " +
-                    "of your database.");
+            throw new IllegalStateException("Database is not initialized. Call the initialize method in the constructor "
+                    + "of your database.");
         }
     }
 
     private ConnectionHandler getUncheckedConnectionHandler(boolean shouldCloseConnectionAfterUsed) {
-        Connection connection = databaseConnectionManager.createNewConnection();
+        try {
+            Connection connection = databaseConnectionManager.createNewConnection();
+            return new ConnectionHandler(connection, shouldCloseConnectionAfterUsed);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
 
-        return new ConnectionHandler(connection, shouldCloseConnectionAfterUsed);
+        return null;
     }
 
     public ConnectionHandler getNewConnectionHandler(boolean shouldCloseConnectionAfterUsed) {

@@ -1,13 +1,14 @@
 package com.github.spygameserver.auth;
 
+import com.github.spygameserver.DatabaseRequiredTest;
 import com.github.spygameserver.database.ConnectionHandler;
-import com.github.spygameserver.database.DatabaseConnectionManager;
-import com.github.spygameserver.database.DatabaseCredentialsProcessor;
+import com.github.spygameserver.database.DatabaseCreator;
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.table.AuthenticationTable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -15,53 +16,31 @@ import java.io.File;
 import java.util.logging.Logger;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ServerAuthenticationHandshakeTest {
+public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
 
     public static final Logger LOG = Logger.getLogger(ServerAuthenticationHandshakeTest.class.getName());
-
-    private static final String FILE_RESOURCE_PATH = "src/test/resources";
-    private static final String DATABASE_CREDENTIALS_FILE = "database_credentials.properties";
-
-    private boolean isSetup = true;
-    private String errorOnSetupMessage = null;
 
     private AuthenticationTable authenticationTable;
     private ConnectionHandler authenticationConnectionHandler;
 
     @BeforeAll
     public void setupDatabaseConnection() {
-        ClassLoader classLoader = this.getClass().getClassLoader();
-        String databaseCredentialsFilePath = classLoader.getResource(DATABASE_CREDENTIALS_FILE).getFile();
-        File databaseCredentialsFile = new File(databaseCredentialsFilePath);
+        File databaseCredentialsFile = getValidCredentialsFile();
 
-        DatabaseCredentialsProcessor databaseCredentialsProcessor = new DatabaseCredentialsProcessor(
-                databaseCredentialsFile, "auth_db"
-        );
+        DatabaseCreator<AuthenticationDatabase> authenticationDatabaseCreator = new DatabaseCreator<>(
+                databaseCredentialsFile, "auth_db", true);
+        AuthenticationDatabase authenticationDatabase = authenticationDatabaseCreator
+                .createDatabaseFromFile(AuthenticationDatabase::new);
 
-        if (!databaseCredentialsProcessor.didFileExistOnStartup()) {
-            isSetup = false;
-            errorOnSetupMessage = String.format("Database credentials file did not exist. Please configure the %s file in " +
-                    "%s and run again.", DATABASE_CREDENTIALS_FILE, FILE_RESOURCE_PATH);
-            return;
-        }
-
-        DatabaseConnectionManager databaseConnectionManager = new DatabaseConnectionManager(databaseCredentialsProcessor);
-        AuthenticationDatabase authenticationDatabase = new AuthenticationDatabase(databaseConnectionManager, true);
         authenticationTable = authenticationDatabase.getAuthenticationTable();
-
         authenticationConnectionHandler = authenticationDatabase.getNewConnectionHandler(false);
-
-        if (authenticationConnectionHandler.getConnection() == null) {
-            isSetup = false;
-            errorOnSetupMessage = "Could not establish connection to database.";
-        }
 
         insertTestDataIfNecessary();
     }
 
-    private void insertTestDataIfNecessary() {
-        // If the table is not empty, we can exit out early
-        if (!authenticationTable.isTableEmpty(authenticationConnectionHandler)) {
+    public void insertTestDataIfNecessary() {
+        // If the table our data already exists, we don't need to be here
+        if (authenticationTable.getPlayerAuthenticationRecord(authenticationConnectionHandler, 1) != null) {
             return;
         }
 
@@ -85,30 +64,29 @@ public class ServerAuthenticationHandshakeTest {
         return string.replace(" ", "").replace("\n", "");
     }
 
-    private void failIfNotSetup() {
-        if (!isSetup) {
-            Assertions.fail(errorOnSetupMessage);
-        }
-    }
-
     @Test
-    public void testPlayerId() {
-        failIfNotSetup();
-
+    public void testValidPlayerReceiveHello() {
         ServerAuthenticationHandshake serverAuthenticationHandshake = new ServerAuthenticationHandshake(
-                null, authenticationTable, authenticationConnectionHandler);
+                authenticationTable, authenticationConnectionHandler);
 
         String successfulHelloHandshake = serverAuthenticationHandshake.receiveHello(1);
         Assertions.assertEquals("Success!", successfulHelloHandshake);
+    }
+
+    @Test
+    public void testInvalidPlayerReceiveHello() {
+        ServerAuthenticationHandshake serverAuthenticationHandshake = new ServerAuthenticationHandshake(
+                authenticationTable, authenticationConnectionHandler);
 
         String unsuccessfulHelloHandshake = serverAuthenticationHandshake.receiveHello(2);
         Assertions.assertEquals("bad_record_mac", unsuccessfulHelloHandshake);
+
     }
 
     @AfterAll
-    public void closeDatabaseConnections() {
-        authenticationConnectionHandler.setShouldCloseConnectionAfterUse(true);
-        authenticationConnectionHandler.closeConnectionIfNecessary();
+    @Override
+    public void closeOpenConnections() {
+        closeOpenConnections(authenticationConnectionHandler);
     }
 
 }

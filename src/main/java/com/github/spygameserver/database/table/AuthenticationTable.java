@@ -16,7 +16,7 @@ public class AuthenticationTable extends AbstractTable {
             "salt CHAR(32) NOT NULL, verifier TEXT(256) NOT NULL, PRIMARY KEY (player_id))";
 
     private static final String INSERT_INTO_QUERY = "INSERT INTO %s VALUES (?, ?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE %s SET salt=? AND verifier=? WHERE player_id=?";
+    private static final String UPDATE_QUERY = "UPDATE %s SET salt=?, verifier=? WHERE player_id=?";
     private static final String SELECT_QUERY = "SELECT salt, verifier FROM %s WHERE player_id=?";
 
     public AuthenticationTable(boolean useTestTables) {
@@ -82,10 +82,10 @@ public class AuthenticationTable extends AbstractTable {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                   String salt = resultSet.getString(1);
-                   String verifier = resultSet.getString(2);
+                    String salt = resultSet.getString(1);
+                    String verifier = resultSet.getString(2);
 
-                   playerAuthenticationData = new PlayerAuthenticationData(playerId, salt, verifier);
+                    playerAuthenticationData = new PlayerAuthenticationData(playerId, salt, verifier);
                 }
             }
         } catch (SQLException ex) {
