@@ -1,5 +1,8 @@
 package com.github.spygameserver.database.table;
 
+import com.github.glusk.caesar.Bytes;
+import com.github.glusk.caesar.Hex;
+import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
 import com.github.spygameserver.DatabaseRequiredTest;
 import com.github.spygameserver.auth.PlayerAuthenticationData;
 import com.github.spygameserver.database.ConnectionHandler;
@@ -13,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.File;
+import java.nio.ByteOrder;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AuthenticationTableTest implements DatabaseRequiredTest {
@@ -74,22 +78,23 @@ public class AuthenticationTableTest implements DatabaseRequiredTest {
         closeOpenConnections(connectionHandler);
     }
 
-    private String getExampleSalt(char c) {
+    private SRP6CustomIntegerVariable getExampleSalt(char c) {
         return repeatCharacter(c, 32);
     }
 
-    private String getExampleVerifier(char c) {
+    private SRP6CustomIntegerVariable getExampleVerifier(char c) {
         return repeatCharacter(c, 256);
     }
 
-    private String repeatCharacter(char c, int numTimes) {
+    private SRP6CustomIntegerVariable repeatCharacter(char c, int numTimes) {
         StringBuilder stringBuilder = new StringBuilder();
 
         for (int i = 1; i <= numTimes; i++) {
             stringBuilder.append(c);
         }
 
-        return stringBuilder.toString();
+        String bytesStringForm = stringBuilder.toString();
+        return new SRP6CustomIntegerVariable(new Hex(bytesStringForm), ByteOrder.BIG_ENDIAN);
     }
 
 }

@@ -19,8 +19,8 @@ public abstract class AbstractPacket {
         return this.packetId;
     }
 
-    public abstract void process(PlayerEncryptionKey playerEncryptionKey, BufferedReader bufferedReader,
-                                 BufferedWriter bufferedWriter);
+    public abstract void process(PacketManager packetManager, PlayerEncryptionKey playerEncryptionKey,
+                                 BufferedReader bufferedReader, BufferedWriter bufferedWriter);
 
     protected void writeJSONObjectToOutput(PlayerEncryptionKey playerEncryptionKey, JSONObject jsonObject,
                                            BufferedWriter bufferedWriter) throws IOException {

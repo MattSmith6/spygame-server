@@ -1,14 +1,20 @@
 package com.github.spygameserver.auth;
 
+import com.github.glusk.caesar.Hex;
+import com.github.glusk.caesar.hashing.ImmutableMessageDigest;
+import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
+import com.github.glusk.srp6_variables.SRP6IntegerVariable;
 import com.github.spygameserver.database.ConnectionHandler;
 import com.github.spygameserver.database.table.AuthenticationTable;
 
-import java.net.Socket;
+import java.math.BigInteger;
+import java.nio.ByteOrder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 public class ServerAuthenticationHandshake {
 
-    /*
     private static final SRP6IntegerVariable N = new SRP6CustomIntegerVariable(
             new Hex(
                     "EEAF0AB9 ADB38DD6 9C33F80A FA8FC5E8 60726187 75FF3C0B"
@@ -37,7 +43,7 @@ public class ServerAuthenticationHandshake {
         }
     }
 
-    private static ByteOrder BYTE_ORDER = ByteOrder.BIG_ENDIAN; */
+    private static ByteOrder BYTE_ORDER = ByteOrder.BIG_ENDIAN;
 
     private final AuthenticationTable authenticationTable;
     private final ConnectionHandler connectionHandler;

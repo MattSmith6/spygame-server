@@ -2,6 +2,7 @@ package com.github.spygameserver.packet.auth;
 
 import com.github.spygameserver.auth.PlayerEncryptionKey;
 import com.github.spygameserver.packet.AbstractPacket;
+import com.github.spygameserver.packet.PacketManager;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -10,13 +11,15 @@ import java.io.IOException;
 
 public class ServerHandshakePacket extends AbstractPacket {
 
-    public ServerHandshakePacket(int packetId) {
-        super(packetId);
+    private static final int PACKET_ID = 0;
+
+    public ServerHandshakePacket() {
+        super(PACKET_ID);
     }
 
     @Override
-    public void process(PlayerEncryptionKey playerEncryptionKey, BufferedReader bufferedReader,
-                        BufferedWriter bufferedWriter) {
+    public void process(PacketManager packetManager, PlayerEncryptionKey playerEncryptionKey,
+                        BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
         try {
             // Read object from the reader, can read using #getInt, #getString, etc.
             JSONObject firstReadObject = readJSONObjectFromInput(playerEncryptionKey, bufferedReader);

@@ -1,12 +1,17 @@
 package com.github.spygameserver.auth;
 
+import com.github.glusk.caesar.Bytes;
+import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
+
+import java.nio.ByteOrder;
+
 public class PlayerAuthenticationData {
 
     private final int playerId;
-    private final String salt;
-    private final String verifier;
+    private final SRP6CustomIntegerVariable salt;
+    private final SRP6CustomIntegerVariable verifier;
 
-    public PlayerAuthenticationData(int playerId, String salt, String verifier) {
+    public PlayerAuthenticationData(int playerId, SRP6CustomIntegerVariable salt, SRP6CustomIntegerVariable verifier) {
         this.playerId = playerId;
         this.salt = salt;
         this.verifier = verifier;
@@ -16,12 +21,24 @@ public class PlayerAuthenticationData {
         return playerId;
     }
 
-    public String getSalt() {
+    public SRP6CustomIntegerVariable getSalt() {
         return salt;
     }
 
-    public String getVerifier() {
+    public byte[] getSaltByteArray() {
+        return transformSRP6VariableToByteArray(getSalt());
+    }
+
+    public SRP6CustomIntegerVariable getVerifier() {
         return verifier;
+    }
+
+    public byte[] getVerifierByteArray() {
+        return transformSRP6VariableToByteArray(getVerifier());
+    }
+
+    private byte[] transformSRP6VariableToByteArray(SRP6CustomIntegerVariable customIntegerVariable) {
+        return customIntegerVariable.bytes(ByteOrder.BIG_ENDIAN).asArray();
     }
 
     @Override

@@ -27,7 +27,7 @@ public class PlayerAccountTable extends AbstractTable {
     private static final String PLAYER_ACCOUNT_DATA_BY_ID_QUERY = "SELECT * FROM %s WHERE player_id=?";
     private static final String PLAYER_ACCOUNT_DATA_BY_EMAIL_QUERY = "SELECT * FROM %s WHERE email=?";
 
-    private static final String PLAYER_VERIFICATION_DATA_QUERY = "SELECT player_id, verification_status FROM %s " +
+    private static final String PLAYER_VERIFICATION_DATA_QUERY = "SELECT player_id, verification_status FROM %s" +
             " WHERE username=?";
 
     public PlayerAccountTable(boolean useTestTables) {

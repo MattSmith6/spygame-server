@@ -1,5 +1,7 @@
 package com.github.spygameserver.auth;
 
+import com.github.glusk.caesar.Hex;
+import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
 import com.github.spygameserver.DatabaseRequiredTest;
 import com.github.spygameserver.database.ConnectionHandler;
 import com.github.spygameserver.database.DatabaseCreator;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.File;
+import java.nio.ByteOrder;
 import java.util.logging.Logger;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -45,12 +48,12 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
         }
 
         int examplePlayerId = 1;
-        String exampleSalt = removeAllWhitespaces("BEB25379 D1A8581E B5A72767 3A2441EE");
-        String exampleVerifier = removeAllWhitespaces(
-                "7E273DE8 696FFC4F 4E337D05 B4B375BE B0DDE156 9E8FA00A 9886D812\n" +
-                "9BADA1F1 822223CA 1A605B53 0E379BA4 729FDC59 F105B478 7E5186F5\n" +
-                "C671085A 1447B52A 48CF1970 B4FB6F84 00BBF4CE BFBB1681 52E08AB5\n" +
-                "EA53D15C 1AFF87B2 B9DA6E04 E058AD51 CC72BFC9 033B564E 26480D78\n" +
+        SRP6CustomIntegerVariable exampleSalt = getIntegerVariableFromByteString("BEB25379 D1A8581E B5A72767 3A2441EE");
+        SRP6CustomIntegerVariable exampleVerifier = getIntegerVariableFromByteString(
+                "7E273DE8 696FFC4F 4E337D05 B4B375BE B0DDE156 9E8FA00A 9886D812" +
+                "9BADA1F1 822223CA 1A605B53 0E379BA4 729FDC59 F105B478 7E5186F5" +
+                "C671085A 1447B52A 48CF1970 B4FB6F84 00BBF4CE BFBB1681 52E08AB5" +
+                "EA53D15C 1AFF87B2 B9DA6E04 E058AD51 CC72BFC9 033B564E 26480D78" +
                 "E955A5E2 9E7AB245 DB2BE315 E2099AFB"
         );
 
@@ -60,8 +63,8 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
         authenticationTable.addPlayerAuthenticationRecord(authenticationConnectionHandler, playerAuthenticationData);
     }
 
-    private String removeAllWhitespaces(String string) {
-        return string.replace(" ", "").replace("\n", "");
+    private SRP6CustomIntegerVariable getIntegerVariableFromByteString(String bytes) {
+        return new SRP6CustomIntegerVariable(new Hex(bytes), ByteOrder.BIG_ENDIAN);
     }
 
     @Test
@@ -80,7 +83,6 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
 
         String unsuccessfulHelloHandshake = serverAuthenticationHandshake.receiveHello(2);
         Assertions.assertEquals("bad_record_mac", unsuccessfulHelloHandshake);
-
     }
 
     @AfterAll

@@ -1,13 +1,22 @@
 package com.github.spygameserver.packet;
 
+import com.github.spygameserver.database.impl.AuthenticationDatabase;
+import com.github.spygameserver.database.impl.GameDatabase;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class PacketManager {
 
+    private final GameDatabase gameDatabase;
+    private final AuthenticationDatabase authenticationDatabase;
+
     private final Map<Integer, AbstractPacket> packetIdToPacketMap;
 
-    public PacketManager() {
+    public PacketManager(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
+        this.gameDatabase = gameDatabase;
+        this.authenticationDatabase = authenticationDatabase;
+
         this.packetIdToPacketMap = new HashMap<>();
     }
 
