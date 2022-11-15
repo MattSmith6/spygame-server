@@ -1,17 +1,31 @@
 package com.github.spygameserver.auth;
 
+import com.github.glusk.caesar.Bytes;
 import com.github.glusk.caesar.Hex;
+import com.github.glusk.caesar.PlainText;
 import com.github.glusk.caesar.hashing.ImmutableMessageDigest;
+import com.github.glusk.srp6_variables.SRP6ClientSessionProof;
 import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
+import com.github.glusk.srp6_variables.SRP6Exception;
 import com.github.glusk.srp6_variables.SRP6IntegerVariable;
+import com.github.glusk.srp6_variables.SRP6Multiplier;
+import com.github.glusk.srp6_variables.SRP6RandomEphemeral;
+import com.github.glusk.srp6_variables.SRP6ScramblingParameter;
+import com.github.glusk.srp6_variables.SRP6ServerPublicKey;
+import com.github.glusk.srp6_variables.SRP6ServerSessionProof;
+import com.github.glusk.srp6_variables.SRP6ServerSharedSecret;
+import com.github.glusk.srp6_variables.SRP6SessionKey;
 import com.github.spygameserver.database.ConnectionHandler;
+import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.table.AuthenticationTable;
+import org.json.JSONObject;
 
 import java.math.BigInteger;
 import java.nio.ByteOrder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 public class ServerAuthenticationHandshake {
 
@@ -50,19 +64,89 @@ public class ServerAuthenticationHandshake {
 
     private final SecureRandom secureRandom;
 
-    public ServerAuthenticationHandshake(AuthenticationTable authenticationTable,
-                                         ConnectionHandler connectionHandler) {
-        this.authenticationTable = authenticationTable;
-        this.connectionHandler = connectionHandler;
+    private final PlainText I;
+    private Bytes s;
+    private SRP6IntegerVariable v;
+
+    private SRP6IntegerVariable b;
+    private SRP6IntegerVariable k;
+    private SRP6IntegerVariable B;
+    private Bytes M2;
+
+    public ServerAuthenticationHandshake(String username, AuthenticationDatabase authenticationDatabase) {
+        this.I = new PlainText(username);
+        this.authenticationTable = authenticationDatabase.getAuthenticationTable();
+        this.connectionHandler = authenticationDatabase.getNewConnectionHandler(true);
 
         this.secureRandom = new SecureRandom();
     }
 
-    public String receiveHello(int playerId) {
+    private void putSRP6Variable(JSONObject jsonObject, String path, SRP6IntegerVariable srp6IntegerVariable) {
+        jsonObject.put(path, srp6IntegerVariable.bytes(BYTE_ORDER).asArray());
+    }
+
+    public JSONObject respondToHello(int playerId) {
+        JSONObject responseToHello = new JSONObject();
+
         PlayerAuthenticationData playerAuthenticationData = authenticationTable
                 .getPlayerAuthenticationRecord(connectionHandler, playerId);
 
-        return playerAuthenticationData != null ? "Success!" : "bad_record_mac";
+        if (playerAuthenticationData == null) {
+            responseToHello.put("error", "bad_record_mac");
+
+            return responseToHello;
+        }
+
+        // Most of this code taken directly from Glusk SRP6-Variables repository, in the example layout
+        // This was a big portion of why I chose this library, it did most of the implementation already
+        try {
+            // lookup and fetch the record by I -> <I, s, v>
+
+            s = playerAuthenticationData.getSalt().bytes(BYTE_ORDER);
+            v = playerAuthenticationData.getVerifier();
+
+            b = new SRP6RandomEphemeral(secureRandom, -1, N);
+            k = new SRP6Multiplier(IMD, N, g, BYTE_ORDER);
+            B = new SRP6ServerPublicKey(N, g, k, v, b);
+
+            // Server should respond with N, g, s, and B in the JSONObject
+            responseToHello.put("N", N.asNonNegativeBigInteger());
+            responseToHello.put("g", g.asNonNegativeBigInteger());
+            responseToHello.put("s", Base64.getEncoder().encode(s.asArray()));
+            responseToHello.put("B", B.asNonNegativeBigInteger());
+
+        } catch (SRP6Exception ex) {
+            responseToHello.put("error", ex.getMessage());
+        }
+
+        return responseToHello;
+    }
+
+    public JSONObject respondToKeyExchange(SRP6IntegerVariable A, Bytes M1) {
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+            SRP6IntegerVariable u = new SRP6ScramblingParameter(IMD, A, B, N, BYTE_ORDER);
+            SRP6IntegerVariable S = new SRP6ServerSharedSecret(N, A, v, u, b);
+            Bytes K = new SRP6SessionKey(IMD, S, BYTE_ORDER);
+            Bytes sM1 = new SRP6ClientSessionProof(IMD, N, g, I, s, A, B, K, BYTE_ORDER);
+            if (!(sM1.equals(M1))) {
+                throw new SRP6Exception("Client proof mismatch!");
+            }
+
+            M2 = new SRP6ServerSessionProof(IMD, N, A, sM1, K, BYTE_ORDER);
+
+            // Server should send M2
+            jsonObject.put("M2", Base64.getEncoder().encode(M2.asArray()));
+        } catch (SRP6Exception ex) {
+            jsonObject.put("error", ex.getMessage());
+        }
+
+        return jsonObject;
+    }
+
+    public byte[] getPremasterSecret() {
+        return M2.asArray();
     }
 
 }

@@ -71,7 +71,7 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
         ServerAuthenticationHandshake serverAuthenticationHandshake = new ServerAuthenticationHandshake(
                 authenticationTable, authenticationConnectionHandler);
 
-        String successfulHelloHandshake = serverAuthenticationHandshake.receiveHello(1);
+        String successfulHelloHandshake = serverAuthenticationHandshake.respondToHello(1);
         Assertions.assertEquals("Success!", successfulHelloHandshake);
     }
 
@@ -80,7 +80,7 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
         ServerAuthenticationHandshake serverAuthenticationHandshake = new ServerAuthenticationHandshake(
                 authenticationTable, authenticationConnectionHandler);
 
-        String unsuccessfulHelloHandshake = serverAuthenticationHandshake.receiveHello(2);
+        String unsuccessfulHelloHandshake = serverAuthenticationHandshake.respondToHello(2);
         Assertions.assertEquals("bad_record_mac", unsuccessfulHelloHandshake);
     }
 

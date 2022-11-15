@@ -27,6 +27,8 @@ public class PlayerAccountTable extends AbstractTable {
     private static final String PLAYER_ACCOUNT_DATA_BY_ID_QUERY = "SELECT * FROM %s WHERE player_id=?";
     private static final String PLAYER_ACCOUNT_DATA_BY_EMAIL_QUERY = "SELECT * FROM %s WHERE email=?";
 
+    private static final String GET_ID_BY_USERNAME_QUERY = "SELECT player_id FROM %s WHERE username=?";
+
     private static final String PLAYER_VERIFICATION_DATA_QUERY = "SELECT player_id, verification_status FROM %s" +
             " WHERE username=?";
 
@@ -157,6 +159,28 @@ public class PlayerAccountTable extends AbstractTable {
         return playerAccountData;
     }
 
+    public Integer getPlayerIdByUsername(ConnectionHandler connectionHandler, String username) {
+        Connection connection = connectionHandler.getConnection();
+        String getPlayerIdByUsernameQuery = formatQuery(GET_ID_BY_USERNAME_QUERY);
+
+        Integer playerId = null;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(getPlayerIdByUsernameQuery)) {
+            preparedStatement.setString(1, username);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    playerId = resultSet.getInt(1);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        connectionHandler.closeConnectionIfNecessary();
+        return playerId;
+    }
+
     public PlayerVerificationData getPlayerVerificationInfo(ConnectionHandler connectionHandler, String username) {
         Connection connection = connectionHandler.getConnection();
         String playerVerificationDataQuery = formatQuery(PLAYER_VERIFICATION_DATA_QUERY);
@@ -167,18 +191,15 @@ public class PlayerAccountTable extends AbstractTable {
             preparedStatement.setString(1, username);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                // If no record exists, we should return a null object
-                if (!resultSet.next()) {
-                    return null;
+                if (resultSet.next()) {
+                    int playerId = resultSet.getInt(1);
+
+                    String nameOfAccountVerificationStatus = resultSet.getString(2);
+                    AccountVerificationStatus accountVerificationStatus = AccountVerificationStatus
+                            .valueOf(nameOfAccountVerificationStatus);
+
+                    playerVerificationData = new PlayerVerificationData(playerId, accountVerificationStatus);
                 }
-
-                int playerId = resultSet.getInt(1);
-
-                String nameOfAccountVerificationStatus = resultSet.getString(2);
-                AccountVerificationStatus accountVerificationStatus = AccountVerificationStatus
-                        .valueOf(nameOfAccountVerificationStatus);
-
-                playerVerificationData = new PlayerVerificationData(playerId, accountVerificationStatus);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
