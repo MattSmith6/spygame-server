@@ -28,4 +28,8 @@ public class ConnectionHandler {
         this.shouldCloseConnectionAfterUse = shouldCloseConnectionAfterUse;
     }
 
+    public void closeAbsolutely() {
+        ExceptionHandling.closeQuietly(getConnection());
+    }
+
 }

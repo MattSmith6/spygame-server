@@ -6,22 +6,21 @@ import spark.Spark;
 
 public class SparkWebsiteHandler {
 
-    private final GameDatabase gameDatabase;
-    private final AuthenticationDatabase authenticationDatabase;
-
     public SparkWebsiteHandler(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
-        this.gameDatabase = gameDatabase;
-        this.authenticationDatabase = authenticationDatabase;
+        setupVerifyEmailPostRequest(gameDatabase, authenticationDatabase);
     }
 
-    public void initialize() {
+    private void setupVerifyEmailPostRequest(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
+        Spark.path("/account", () -> {
 
-    }
+            Spark.path("/email", () -> Spark.put("/verify", new AddVerifiedEmailRoute(gameDatabase)));
 
-    private void setupVerifyEmailPostRequest() {
-        Spark.path("/verification", () -> {
-            //Spark.put("/email", );
-            //Spark.put("/username", );
+            Spark.path("/username", () -> Spark.put("/get", new GetAccountUsernameRoute(gameDatabase)));
+
+            Spark.put("/register", new AddUsernameEmailRoute(gameDatabase, authenticationDatabase));
+
+            Spark.put("/reset", new ResetPasswordRoute(gameDatabase, authenticationDatabase));
+
         });
     }
 

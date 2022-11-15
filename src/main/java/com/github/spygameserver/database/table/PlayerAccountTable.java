@@ -61,18 +61,21 @@ public class PlayerAccountTable extends AbstractTable {
         Connection connection = connectionHandler.getConnection();
         String selectOneQuery = formatQuery(query);
 
+        boolean result = false;
+
         try (PreparedStatement preparedStatement = connection.prepareStatement(selectOneQuery)) {
             preparedStatement.setString(1, property);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 // If there is a result, then this property does exist
-                return resultSet.next();
+                result = resultSet.next();
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
-        return false;
+        connectionHandler.closeConnectionIfNecessary();
+        return result;
     }
 
     // Sets the player's account with no username, the user should select a username and password for next step
@@ -88,6 +91,8 @@ public class PlayerAccountTable extends AbstractTable {
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+
+        connectionHandler.closeConnectionIfNecessary();
     }
 
     // Sets the player's username associated with their email, authentication information is generated at this step also
@@ -104,6 +109,8 @@ public class PlayerAccountTable extends AbstractTable {
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+
+        connectionHandler.closeConnectionIfNecessary();
     }
 
     public PlayerAccountData getPlayerAccountData(ConnectionHandler connectionHandler, int playerId) {
@@ -120,6 +127,8 @@ public class PlayerAccountTable extends AbstractTable {
                                                    SQLStatementConsumer sqlStatementConsumer) {
         Connection connection = connectionHandler.getConnection();
         String playerAccountDataQuery = formatQuery(query);
+
+        PlayerAccountData playerAccountData = null;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(playerAccountDataQuery)) {
             sqlStatementConsumer.consume(preparedStatement);
@@ -138,18 +147,21 @@ public class PlayerAccountTable extends AbstractTable {
                 AccountVerificationStatus accountVerificationStatus = AccountVerificationStatus
                         .valueOf(nameOfAccountVerificationStatus);
 
-                return new PlayerAccountData(playerId, email, username, accountVerificationStatus);
+                playerAccountData = new PlayerAccountData(playerId, email, username, accountVerificationStatus);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
-        return null;
+        connectionHandler.closeConnectionIfNecessary();
+        return playerAccountData;
     }
 
     public PlayerVerificationData getPlayerVerificationInfo(ConnectionHandler connectionHandler, String username) {
         Connection connection = connectionHandler.getConnection();
         String playerVerificationDataQuery = formatQuery(PLAYER_VERIFICATION_DATA_QUERY);
+
+        PlayerVerificationData playerVerificationData = null;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(playerVerificationDataQuery)) {
             preparedStatement.setString(1, username);
@@ -166,13 +178,14 @@ public class PlayerAccountTable extends AbstractTable {
                 AccountVerificationStatus accountVerificationStatus = AccountVerificationStatus
                         .valueOf(nameOfAccountVerificationStatus);
 
-                return new PlayerVerificationData(playerId, accountVerificationStatus);
+                playerVerificationData = new PlayerVerificationData(playerId, accountVerificationStatus);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
-        return null;
+        connectionHandler.closeConnectionIfNecessary();
+        return playerVerificationData;
     }
 
     private interface SQLStatementConsumer {

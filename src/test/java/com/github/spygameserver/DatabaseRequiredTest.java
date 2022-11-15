@@ -34,8 +34,7 @@ public interface DatabaseRequiredTest {
     void closeOpenConnections();
 
     default void closeOpenConnections(ConnectionHandler connectionHandler) {
-        connectionHandler.setShouldCloseConnectionAfterUse(true);
-        connectionHandler.closeConnectionIfNecessary();
+        connectionHandler.closeAbsolutely();
     }
 
 }

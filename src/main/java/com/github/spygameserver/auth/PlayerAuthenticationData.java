@@ -1,9 +1,12 @@
 package com.github.spygameserver.auth;
 
 import com.github.glusk.caesar.Bytes;
+import com.github.glusk.caesar.PlainText;
+import com.github.glusk.caesar.hashing.Hash;
 import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
 
 import java.nio.ByteOrder;
+import java.security.SecureRandom;
 
 public class PlayerAuthenticationData {
 
@@ -15,6 +18,25 @@ public class PlayerAuthenticationData {
         this.playerId = playerId;
         this.salt = salt;
         this.verifier = verifier;
+    }
+
+    public PlayerAuthenticationData(int playerId, String username, String password) {
+        this.playerId = playerId;
+
+        PlainText usernameText = new PlainText(username);
+        PlainText usernamePasswordDelimiter = new PlainText(":");
+        PlainText passwordText = new PlainText(password);
+
+        Bytes firstHash = new Hash(ServerAuthenticationHandshake.IMD, usernameText, usernamePasswordDelimiter, passwordText);
+
+        // Generate random salt
+        SecureRandom secureRandom = new SecureRandom();
+        Bytes salt = Bytes.wrapped(secureRandom.generateSeed(16));
+
+        Bytes verifier = new Hash(ServerAuthenticationHandshake.IMD, salt, firstHash);
+
+        this.salt = new SRP6CustomIntegerVariable(salt, ByteOrder.BIG_ENDIAN);
+        this.verifier = new SRP6CustomIntegerVariable(verifier, ByteOrder.BIG_ENDIAN);
     }
 
     public int getPlayerId() {

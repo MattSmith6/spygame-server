@@ -31,9 +31,9 @@ public class ServerAuthenticationHandshake {
             BigInteger.valueOf(2)
     );
 
-    private static final ImmutableMessageDigest imd = getSHA256Hash();
+    public static final ImmutableMessageDigest IMD = getSHA256Hash();
 
-    private static ImmutableMessageDigest getSHA256Hash() {
+    public static ImmutableMessageDigest getSHA256Hash() {
         try {
             return new ImmutableMessageDigest(
                     MessageDigest.getInstance("SHA-256")

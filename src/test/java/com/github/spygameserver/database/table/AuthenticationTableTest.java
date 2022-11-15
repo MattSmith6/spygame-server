@@ -1,6 +1,5 @@
 package com.github.spygameserver.database.table;
 
-import com.github.glusk.caesar.Bytes;
 import com.github.glusk.caesar.Hex;
 import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
 import com.github.spygameserver.DatabaseRequiredTest;
@@ -11,7 +10,6 @@ import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 

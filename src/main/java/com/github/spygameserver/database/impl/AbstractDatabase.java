@@ -27,8 +27,7 @@ public abstract class AbstractDatabase {
             table.initialize(connectionHandler);
         }
 
-        connectionHandler.setShouldCloseConnectionAfterUse(true);
-        connectionHandler.closeConnectionIfNecessary();
+        connectionHandler.closeAbsolutely();
 
         this.isInitialized = true;
     }

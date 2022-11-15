@@ -1,6 +1,5 @@
 package com.github.spygameserver.database.table;
 
-import com.github.glusk.caesar.Bytes;
 import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
 import com.github.spygameserver.auth.PlayerAuthenticationData;
 import com.github.spygameserver.database.ConnectionHandler;
