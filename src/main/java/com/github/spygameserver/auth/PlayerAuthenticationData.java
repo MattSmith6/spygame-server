@@ -4,6 +4,7 @@ import com.github.glusk.caesar.Bytes;
 import com.github.glusk.caesar.PlainText;
 import com.github.glusk.caesar.hashing.Hash;
 import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
+import com.github.glusk.srp6_variables.SRP6IntegerVariable;
 
 import java.nio.ByteOrder;
 import java.security.SecureRandom;
@@ -11,10 +12,10 @@ import java.security.SecureRandom;
 public class PlayerAuthenticationData {
 
     private final int playerId;
-    private final SRP6CustomIntegerVariable salt;
-    private final SRP6CustomIntegerVariable verifier;
+    private final Bytes salt;
+    private final SRP6IntegerVariable verifier;
 
-    public PlayerAuthenticationData(int playerId, SRP6CustomIntegerVariable salt, SRP6CustomIntegerVariable verifier) {
+    public PlayerAuthenticationData(int playerId, Bytes salt, SRP6IntegerVariable verifier) {
         this.playerId = playerId;
         this.salt = salt;
         this.verifier = verifier;
@@ -31,11 +32,11 @@ public class PlayerAuthenticationData {
 
         // Generate random salt
         SecureRandom secureRandom = new SecureRandom();
-        Bytes salt = Bytes.wrapped(secureRandom.generateSeed(16));
+        Bytes salt = Bytes.wrapped(secureRandom.generateSeed(32));
 
         Bytes verifier = new Hash(ServerAuthenticationHandshake.IMD, salt, firstHash);
 
-        this.salt = new SRP6CustomIntegerVariable(salt, ByteOrder.BIG_ENDIAN);
+        this.salt = salt;
         this.verifier = new SRP6CustomIntegerVariable(verifier, ByteOrder.BIG_ENDIAN);
     }
 
@@ -43,24 +44,16 @@ public class PlayerAuthenticationData {
         return playerId;
     }
 
-    public SRP6CustomIntegerVariable getSalt() {
+    public Bytes getSalt() {
         return salt;
     }
 
     public byte[] getSaltByteArray() {
-        return transformSRP6VariableToByteArray(getSalt());
+        return salt.asArray();
     }
 
-    public SRP6CustomIntegerVariable getVerifier() {
+    public SRP6IntegerVariable getVerifier() {
         return verifier;
-    }
-
-    public byte[] getVerifierByteArray() {
-        return transformSRP6VariableToByteArray(getVerifier());
-    }
-
-    private byte[] transformSRP6VariableToByteArray(SRP6CustomIntegerVariable customIntegerVariable) {
-        return customIntegerVariable.bytes(ByteOrder.BIG_ENDIAN).asArray();
     }
 
     @Override

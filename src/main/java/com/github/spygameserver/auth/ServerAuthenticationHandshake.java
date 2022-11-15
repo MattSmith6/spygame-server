@@ -102,7 +102,7 @@ public class ServerAuthenticationHandshake {
         try {
             // lookup and fetch the record by I -> <I, s, v>
 
-            s = playerAuthenticationData.getSalt().bytes(BYTE_ORDER);
+            s = playerAuthenticationData.getSalt();
             v = playerAuthenticationData.getVerifier();
 
             b = new SRP6RandomEphemeral(secureRandom, -1, N);

@@ -42,14 +42,13 @@ public class ServerHandshakePacket extends AbstractPacket {
             return;
         }
 
-        ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
-
         String username = usernamePacket.getString("I");
 
         if (username == null) {
             writeErrorObject(bufferedWriter, "Bad handshake, I is null in username object");
         }
 
+        ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
         Integer playerId = gameDatabase.getPlayerAccountTable().getPlayerIdByUsername(connectionHandler, username);
 
         if (playerId == null) {
@@ -121,4 +120,5 @@ public class ServerHandshakePacket extends AbstractPacket {
             ex.printStackTrace();
         }
     }
+
 }

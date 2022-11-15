@@ -47,12 +47,7 @@ public class DatabaseCredentialsProcessor {
     private void createPropertiesFileAndSetDefaults() {
         try {
             file.createNewFile();
-
-            setProperty(HOST_PATH);
-            setProperty(PORT_PATH);
-            setProperty(DATABASE_PATH);
-            setProperty(USERNAME_PATH);
-            setProperty(PASSWORD_PATH);
+            setFileDefaults();
 
             try (FileWriter fileWriter = new FileWriter(file)) {
                 properties.store(fileWriter, "Auto-generated, configure this file for database connections");
@@ -60,6 +55,14 @@ public class DatabaseCredentialsProcessor {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private void setFileDefaults() {
+        setProperty(HOST_PATH);
+        setProperty(PORT_PATH);
+        setProperty(DATABASE_PATH);
+        setProperty(USERNAME_PATH);
+        setProperty(PASSWORD_PATH);
     }
 
     private void setProperty(String secondaryPath) {

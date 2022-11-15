@@ -1,9 +1,12 @@
 package com.github.spygameserver.database.table;
 
+import com.github.glusk.caesar.Bytes;
 import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
+import com.github.glusk.srp6_variables.SRP6IntegerVariable;
 import com.github.spygameserver.auth.PlayerAuthenticationData;
 import com.github.spygameserver.database.ConnectionHandler;
 
+import java.math.BigInteger;
 import java.nio.ByteOrder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -45,8 +48,8 @@ public class AuthenticationTable extends AbstractTable {
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertPlayerRecordQuery)) {
             preparedStatement.setInt(1, playerAuthenticationData.getPlayerId());
-            preparedStatement.setBytes(2, playerAuthenticationData.getSaltByteArray());
-            preparedStatement.setBytes(3, playerAuthenticationData.getVerifierByteArray());
+            preparedStatement.setBytes(2, playerAuthenticationData.getSalt().asArray());
+            preparedStatement.setBytes(3, playerAuthenticationData.getVerifier().bytes(ByteOrder.BIG_ENDIAN).asArray());
 
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
@@ -61,8 +64,8 @@ public class AuthenticationTable extends AbstractTable {
         String updatePlayerRecordTheory = formatQuery(UPDATE_QUERY);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(updatePlayerRecordTheory)) {
-            preparedStatement.setBytes(1, playerAuthenticationData.getSaltByteArray());
-            preparedStatement.setBytes(2, playerAuthenticationData.getVerifierByteArray());
+            preparedStatement.setBytes(1, playerAuthenticationData.getSalt().asArray());
+            preparedStatement.setBytes(2, playerAuthenticationData.getVerifier().bytes(ByteOrder.BIG_ENDIAN).asArray());
             preparedStatement.setInt(3, playerAuthenticationData.getPlayerId());
 
             preparedStatement.executeUpdate();
@@ -84,9 +87,10 @@ public class AuthenticationTable extends AbstractTable {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    SRP6CustomIntegerVariable salt = new SRP6CustomIntegerVariable(resultSet.getBytes(1), ByteOrder.BIG_ENDIAN);
-                    SRP6CustomIntegerVariable verifier = new SRP6CustomIntegerVariable(resultSet.getBytes(2), ByteOrder.BIG_ENDIAN);
+                    Bytes salt = Bytes.wrapped(resultSet.getBytes(1));
 
+                    SRP6IntegerVariable verifier = new SRP6CustomIntegerVariable(Bytes.wrapped(resultSet.getBytes(2)),
+                            ByteOrder.BIG_ENDIAN);
                     playerAuthenticationData = new PlayerAuthenticationData(playerId, salt, verifier);
                 }
             }

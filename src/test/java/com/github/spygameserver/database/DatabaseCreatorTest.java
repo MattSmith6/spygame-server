@@ -11,6 +11,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+// This class, by proxy, also tests DatabaseCredentialsProcessor
 public class DatabaseCreatorTest implements DatabaseRequiredTest {
 
     private DatabaseCreator<AuthenticationDatabase> getNewDatabaseCreator(File file, String databasePath) {
