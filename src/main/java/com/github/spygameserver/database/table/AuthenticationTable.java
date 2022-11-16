@@ -18,7 +18,7 @@ public class AuthenticationTable extends AbstractTable {
     private static final String NON_TESTING_TABLE_NAME = "player_authentication";
 
     private static final String CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS %s (player_id INT NOT NULL, " +
-            "salt BINARY(16) NOT NULL, verifier BINARY(128) NOT NULL, PRIMARY KEY (player_id))";
+            "salt BINARY(32) NOT NULL, verifier BINARY(128) NOT NULL, PRIMARY KEY (player_id))";
 
     private static final String INSERT_INTO_QUERY = "INSERT INTO %s VALUES (?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE %s SET salt=?, verifier=? WHERE player_id=?";

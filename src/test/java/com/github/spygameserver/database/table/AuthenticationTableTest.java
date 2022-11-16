@@ -79,7 +79,7 @@ public class AuthenticationTableTest implements DatabaseRequiredTest {
     }
 
     private Bytes getExampleSalt(char c) {
-        return repeatCharacter(c, 32);
+        return repeatCharacter(c, 64);
     }
 
     private SRP6IntegerVariable getExampleVerifier(char c) {

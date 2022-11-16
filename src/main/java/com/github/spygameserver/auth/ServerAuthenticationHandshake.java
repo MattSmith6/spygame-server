@@ -29,7 +29,7 @@ import java.util.Base64;
 
 public class ServerAuthenticationHandshake {
 
-    private static final SRP6IntegerVariable N = new SRP6CustomIntegerVariable(
+    public static final SRP6IntegerVariable N = new SRP6CustomIntegerVariable(
             new Hex(
                     "EEAF0AB9 ADB38DD6 9C33F80A FA8FC5E8 60726187 75FF3C0B"
                             + "9EA2314C 9C256576 D674DF74 96EA81D3 383B4813 D692C6E0"
@@ -41,7 +41,7 @@ public class ServerAuthenticationHandshake {
             ByteOrder.BIG_ENDIAN
     );
 
-    private static final SRP6IntegerVariable g = new SRP6CustomIntegerVariable(
+    public static final SRP6IntegerVariable g = new SRP6CustomIntegerVariable(
             BigInteger.valueOf(2)
     );
 
@@ -57,7 +57,7 @@ public class ServerAuthenticationHandshake {
         }
     }
 
-    private static ByteOrder BYTE_ORDER = ByteOrder.BIG_ENDIAN;
+    public static ByteOrder BYTE_ORDER = ByteOrder.BIG_ENDIAN;
 
     private final AuthenticationTable authenticationTable;
     private final ConnectionHandler connectionHandler;
@@ -72,6 +72,7 @@ public class ServerAuthenticationHandshake {
     private SRP6IntegerVariable k;
     private SRP6IntegerVariable B;
     private Bytes M2;
+    private SRP6IntegerVariable S;
 
     public ServerAuthenticationHandshake(String username, AuthenticationDatabase authenticationDatabase) {
         this.I = new PlainText(username);
@@ -110,13 +111,12 @@ public class ServerAuthenticationHandshake {
             B = new SRP6ServerPublicKey(N, g, k, v, b);
 
             // Server should respond with N, g, s, and B in the JSONObject
-            responseToHello.put("N", N.asNonNegativeBigInteger());
-            responseToHello.put("g", g.asNonNegativeBigInteger());
-            responseToHello.put("s", Base64.getEncoder().encode(s.asArray()));
-            responseToHello.put("B", B.asNonNegativeBigInteger());
-
+            responseToHello.put("N", Base64.getEncoder().encodeToString(N.bytes(BYTE_ORDER).asArray()));
+            responseToHello.put("g", Base64.getEncoder().encodeToString(g.bytes(BYTE_ORDER).asArray()));
+            responseToHello.put("s", Base64.getEncoder().encodeToString(s.asArray()));
+            responseToHello.put("B", Base64.getEncoder().encodeToString(B.bytes(BYTE_ORDER).asArray()));
         } catch (SRP6Exception ex) {
-            responseToHello.put("error", ex.getMessage());
+            responseToHello.put("error", "bad_record_mac");
         }
 
         return responseToHello;
@@ -127,9 +127,10 @@ public class ServerAuthenticationHandshake {
 
         try {
             SRP6IntegerVariable u = new SRP6ScramblingParameter(IMD, A, B, N, BYTE_ORDER);
-            SRP6IntegerVariable S = new SRP6ServerSharedSecret(N, A, v, u, b);
+            S = new SRP6ServerSharedSecret(N, A, v, u, b);
             Bytes K = new SRP6SessionKey(IMD, S, BYTE_ORDER);
             Bytes sM1 = new SRP6ClientSessionProof(IMD, N, g, I, s, A, B, K, BYTE_ORDER);
+
             if (!(sM1.equals(M1))) {
                 throw new SRP6Exception("Client proof mismatch!");
             }
@@ -137,16 +138,16 @@ public class ServerAuthenticationHandshake {
             M2 = new SRP6ServerSessionProof(IMD, N, A, sM1, K, BYTE_ORDER);
 
             // Server should send M2
-            jsonObject.put("M2", Base64.getEncoder().encode(M2.asArray()));
+            jsonObject.put("M2", Base64.getEncoder().encodeToString(M2.asArray()));
         } catch (SRP6Exception ex) {
-            jsonObject.put("error", ex.getMessage());
+            jsonObject.put("error", "Client proof mismatch!");
         }
 
         return jsonObject;
     }
 
     public byte[] getPremasterSecret() {
-        return M2.asArray();
+        return S.bytes(BYTE_ORDER).asArray();
     }
 
 }

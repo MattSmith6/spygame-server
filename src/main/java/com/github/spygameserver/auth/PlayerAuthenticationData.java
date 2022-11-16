@@ -5,6 +5,8 @@ import com.github.glusk.caesar.PlainText;
 import com.github.glusk.caesar.hashing.Hash;
 import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
 import com.github.glusk.srp6_variables.SRP6IntegerVariable;
+import com.github.glusk.srp6_variables.SRP6PrivateKey;
+import com.github.glusk.srp6_variables.SRP6Verifier;
 
 import java.nio.ByteOrder;
 import java.security.SecureRandom;
@@ -24,20 +26,23 @@ public class PlayerAuthenticationData {
     public PlayerAuthenticationData(int playerId, String username, String password) {
         this.playerId = playerId;
 
-        PlainText usernameText = new PlainText(username);
-        PlainText usernamePasswordDelimiter = new PlainText(":");
-        PlainText passwordText = new PlainText(password);
+        PlainText I = new PlainText(username);
+        PlainText P = new PlainText(password);
 
-        Bytes firstHash = new Hash(ServerAuthenticationHandshake.IMD, usernameText, usernamePasswordDelimiter, passwordText);
+        SecureRandom rng = new SecureRandom();
+        Bytes s = Bytes.wrapped(rng.generateSeed(32));
+        System.out.println(s.asHexString());
+        System.out.println(s.asHexString().length() / 2);
 
-        // Generate random salt
-        SecureRandom secureRandom = new SecureRandom();
-        Bytes salt = Bytes.wrapped(secureRandom.generateSeed(32));
+        SRP6IntegerVariable x = new SRP6PrivateKey(ServerAuthenticationHandshake.IMD, s, I, P,
+                ServerAuthenticationHandshake.BYTE_ORDER);
+        SRP6IntegerVariable v = new SRP6Verifier(ServerAuthenticationHandshake.N, ServerAuthenticationHandshake.g, x);
 
-        Bytes verifier = new Hash(ServerAuthenticationHandshake.IMD, salt, firstHash);
+        System.out.println(v.bytes(ByteOrder.BIG_ENDIAN).asHexString());
+        System.out.println(v.bytes(ByteOrder.BIG_ENDIAN).asHexString().length() / 2);
 
-        this.salt = salt;
-        this.verifier = new SRP6CustomIntegerVariable(verifier, ByteOrder.BIG_ENDIAN);
+        this.salt = s;
+        this.verifier = v;
     }
 
     public int getPlayerId() {
