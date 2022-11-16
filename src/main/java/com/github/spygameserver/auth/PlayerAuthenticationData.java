@@ -31,15 +31,10 @@ public class PlayerAuthenticationData {
 
         SecureRandom rng = new SecureRandom();
         Bytes s = Bytes.wrapped(rng.generateSeed(32));
-        System.out.println(s.asHexString());
-        System.out.println(s.asHexString().length() / 2);
 
         SRP6IntegerVariable x = new SRP6PrivateKey(ServerAuthenticationHandshake.IMD, s, I, P,
                 ServerAuthenticationHandshake.BYTE_ORDER);
         SRP6IntegerVariable v = new SRP6Verifier(ServerAuthenticationHandshake.N, ServerAuthenticationHandshake.g, x);
-
-        System.out.println(v.bytes(ByteOrder.BIG_ENDIAN).asHexString());
-        System.out.println(v.bytes(ByteOrder.BIG_ENDIAN).asHexString().length() / 2);
 
         this.salt = s;
         this.verifier = v;
