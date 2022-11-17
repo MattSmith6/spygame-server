@@ -23,6 +23,7 @@ public class GameLobbyTable extends AbstractTable {
     private static final String INSERT_INTO_QUERY = "INSERT INTO %s (invite_code, is_public, game_type, " +
             "max_players, current_players) VALUES (?, ?, ?, ?, ?)";
 
+    private static final String GET_CURRENT_PLAYERS_QUERY = "SELECT current_players=? FROM %s WHERE game_id=?";
     private static final String UPDATE_CURRENT_PLAYERS_QUERY = "UPDATE %s SET current_players=? WHERE game_id=?";
     private static final String UPDATE_START_TIME = "UPDATE %s SET start_time=? WHERE game_id=?";
     private static final String UPDATE_END_TIME = "UPDATE %s SET end_time=? WHERE game_id=?";
@@ -88,6 +89,29 @@ public class GameLobbyTable extends AbstractTable {
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public int getCurrentPlayers(ConnectionHandler connectionHandler, int gameID) {
+        Connection connection = connectionHandler.getConnection();
+        String selectOneQuery = formatQuery(GET_CURRENT_PLAYERS_QUERY);
+
+        int currentPlayers = -1;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectOneQuery)) {
+            preparedStatement.setInt(1, gameID);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                // If there is a result, then this property does exist
+                if (resultSet.next()) {
+                    currentPlayers = resultSet.getInt(1);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        connectionHandler.closeConnectionIfNecessary();
+        return currentPlayers;
     }
 
     public void updateCurrentPlayers(ConnectionHandler connectionHandler, int current_players) {
