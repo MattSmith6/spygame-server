@@ -38,11 +38,10 @@ public class DatabaseCreatorTest implements DatabaseRequiredTest {
         Assertions.assertTrue(nonExistentFile.exists(), "Template should be created for file if it didn't exist");
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { "invalid_1", "invalid_2", "invalid_3", "invalid_4" })
-    public void checkExceptionOnInvalidCredentials(String databasePath) {
+    @Test
+    public void checkExceptionOnInvalidCredentials() {
         File invalidCredentialsFile = getInvalidCredentialsFile();
-        DatabaseCreator<AuthenticationDatabase> databaseCreator = getNewDatabaseCreator(invalidCredentialsFile, databasePath);
+        DatabaseCreator<AuthenticationDatabase> databaseCreator = getNewDatabaseCreator(invalidCredentialsFile, "invalid");
 
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> databaseCreator.createDatabaseFromFile(AuthenticationDatabase::new),

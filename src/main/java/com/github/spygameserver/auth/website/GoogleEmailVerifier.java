@@ -6,7 +6,8 @@ public class GoogleEmailVerifier {
 
     public static boolean isCSUNEmailVerified(JSONObject postBody) {
         // TODO: Grab email and google token from post body
-        String email = null;
+        String email = postBody.getString("email");
+        String token = postBody.getString("token");
 
         if (!isEmailFromCSUN(email)) {
             return false;

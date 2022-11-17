@@ -24,4 +24,8 @@ public class SparkWebsiteHandler {
         });
     }
 
+    public void shutdown() {
+        Spark.stop();
+    }
+
 }
