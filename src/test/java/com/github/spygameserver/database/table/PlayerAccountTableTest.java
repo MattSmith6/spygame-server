@@ -29,10 +29,7 @@ public class PlayerAccountTableTest implements DatabaseRequiredTest {
 
     @BeforeAll
     public void setupConnection() {
-        File credentials = getValidCredentialsFile();
-
-        DatabaseCreator<GameDatabase> databaseCreator = new DatabaseCreator<>(credentials, "game_db", true);
-        GameDatabase gameDatabase = databaseCreator.createDatabaseFromFile(GameDatabase::new);
+        GameDatabase gameDatabase = getGameDatabase();
 
         playerAccountTable = gameDatabase.getPlayerAccountTable();
         connectionHandler = gameDatabase.getNewConnectionHandler(false);

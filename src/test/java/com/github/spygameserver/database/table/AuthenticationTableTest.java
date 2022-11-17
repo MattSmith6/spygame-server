@@ -28,10 +28,7 @@ public class AuthenticationTableTest implements DatabaseRequiredTest {
 
     @BeforeAll
     public void setupAuthenticationTable() {
-        File file = getValidCredentialsFile();
-
-        DatabaseCreator<AuthenticationDatabase> databaseCreator = new DatabaseCreator<>(file, "auth_db", true);
-        AuthenticationDatabase authenticationDatabase = databaseCreator.createDatabaseFromFile(AuthenticationDatabase::new);
+        AuthenticationDatabase authenticationDatabase = getAuthenticationDatabase();
 
         authenticationTable = authenticationDatabase.getAuthenticationTable();
         connectionHandler = authenticationDatabase.getNewConnectionHandler(false);

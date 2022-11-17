@@ -60,18 +60,16 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
 
     @BeforeAll
     public void setupDatabaseConnection() {
-        File databaseCredentialsFile = getValidCredentialsFile();
+        authenticationDatabase = getAuthenticationDatabase();
 
-        DatabaseCreator<AuthenticationDatabase> authenticationDatabaseCreator = new DatabaseCreator<>(
-                databaseCredentialsFile, "auth_db", true);
-        authenticationDatabase = authenticationDatabaseCreator.createDatabaseFromFile(AuthenticationDatabase::new);
+        ConnectionHandler connectionHandler = authenticationDatabase.getNewConnectionHandler(false);
 
-        authenticationDatabase.getAuthenticationTable().dropTableSecure(authenticationDatabase.getNewConnectionHandler(true));
-        authenticationDatabase.getAuthenticationTable().createTableIfNotExists(authenticationDatabase.getNewConnectionHandler(true));
+        authenticationDatabase.getAuthenticationTable().dropTableSecure(connectionHandler);
+        authenticationDatabase.getAuthenticationTable().createTableIfNotExists(connectionHandler);
 
-        DatabaseCreator<GameDatabase> gameDatabaseDatabaseCreator = new DatabaseCreator<>(databaseCredentialsFile,
-                "game_db", true);
-        gameDatabase = gameDatabaseDatabaseCreator.createDatabaseFromFile(GameDatabase::new);
+        connectionHandler.closeAbsolutely();
+
+        gameDatabase = getGameDatabase();
 
         insertTestDataIfNecessary();
     }
