@@ -1,10 +1,14 @@
 package com.github.spygameserver.packet;
 
 import com.github.spygameserver.auth.PlayerEncryptionKey;
+import com.github.spygameserver.database.ConnectionHandler;
+import com.github.spygameserver.database.impl.GameDatabase;
 import com.github.spygameserver.database.table.GameLobbyTable;
+import com.github.spygameserver.database.table.PlayerGameInfoTable;
 import com.github.spygameserver.packet.AbstractPacket;
 import com.github.spygameserver.packet.PacketManager;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,7 +23,7 @@ public class LeaderboardPacket extends AbstractPacket {
     private static final int PACKET_ID = 12;
 
     int leaderboardSize = 5;
-    string usernames[];
+    String usernames[];
     int scores[];
     int i;
 
@@ -37,12 +41,12 @@ public class LeaderboardPacket extends AbstractPacket {
             // Set object properties using #put
             JSONObject objectToSend = new JSONObject();
 
-            connectionHandler.closeConnectionIfNecessary();
+            GameDatabase gameDatabase = packetManager.getGameDatabase();
+            PlayerGameInfoTable gameInfoTable = gameDatabase.getPlayerGameInfoTable();
 
-            for(i = 0; i < leaderboardSize; i++)
-            {
-                ;
-            }
+            ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
+
+            objectToSend = gameInfoTable.getLeaderboard(connectionHandler, 5);
 
             // Write the JSON object to the player's app
             writeJSONObjectToOutput(playerEncryptionKey, objectToSend, bufferedWriter);

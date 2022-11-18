@@ -15,10 +15,9 @@ import java.sql.Connection;
 
 public class JoinGamePacket extends AbstractPacket {
 
-    private static final int PACKET_ID = 11;cd
+    private static final int PACKET_ID = 11;
 
     boolean canJoinGame = true;
-    int playerID = 1; //Dummy value
     int currentPlayers;
     String code;
     GameLobbyTable.Pair<Integer, Long> gameStuff = null;
@@ -53,6 +52,7 @@ public class JoinGamePacket extends AbstractPacket {
                 gameLobbyTable.updateCurrentPlayers(connectionHandler, currentPlayers);
 
                 //put the player id in the game
+                //int playerID = playerEncryptionKey.getPlayerId();
             }
 
             connectionHandler.setShouldCloseConnectionAfterUse(true);

@@ -28,6 +28,8 @@ public class GameLobbyTable extends AbstractTable {
     private static final String UPDATE_START_TIME = "UPDATE %s SET start_time=? WHERE game_id=?";
     private static final String UPDATE_END_TIME = "UPDATE %s SET end_time=? WHERE game_id=?";
 
+    private static final String SHOW_ALL = "SELECT * FROM %s WHERE invite_code=?";
+
 
     public GameLobbyTable(boolean useTestTables) {
         super(NON_TESTING_TABLE_NAME, useTestTables);
@@ -77,7 +79,7 @@ public class GameLobbyTable extends AbstractTable {
                            int game_type, int max_players) {
         Connection connection = connectionHandler.getConnection();
         String insertIntoQuery = formatQuery(INSERT_INTO_QUERY);
-
+        //invite code should be randomly generated
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertIntoQuery)) {
             preparedStatement.setString(1, invite_code);
             preparedStatement.setInt(2, is_public);
@@ -127,12 +129,14 @@ public class GameLobbyTable extends AbstractTable {
         }
     }
 
-    public void updateStartTime(ConnectionHandler connectionHandler, long start_time) {
+    public void updateStartTime(ConnectionHandler connectionHandler) {
         Connection connection = connectionHandler.getConnection();
         String updateUsernameQuery = formatQuery(UPDATE_START_TIME);
 
+        long startTime = System.currentTimeMillis();
+
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameQuery)) {
-            preparedStatement.setLong(1, start_time);
+            preparedStatement.setLong(1, startTime);
 
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
@@ -140,17 +144,60 @@ public class GameLobbyTable extends AbstractTable {
         }
     }
 
-    public void updateEndTime(ConnectionHandler connectionHandler, long end_time) {
+    public void updateEndTime(ConnectionHandler connectionHandler) {
         Connection connection = connectionHandler.getConnection();
         String updateUsernameQuery = formatQuery(UPDATE_END_TIME);
 
+        long endTime = System.currentTimeMillis();
+
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameQuery)) {
-            preparedStatement.setLong(1, end_time);
+            preparedStatement.setLong(1, endTime);
 
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public game showAll(ConnectionHandler connectionHandler, String inviteCode) {
+        Connection connection = connectionHandler.getConnection();
+        String selectOneQuery = formatQuery(SHOW_ALL);
+
+        game shownGame = new game();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectOneQuery)) {
+            preparedStatement.setString(1, inviteCode);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                // If there is a result, then this property does exist
+                if (resultSet.next()) {
+                    shownGame.gameID = resultSet.getInt(1);
+                    shownGame.inviteCode = resultSet.getString(2);
+                    shownGame.isPublic = resultSet.getInt(3);
+                    shownGame.gameType = resultSet.getInt(4);
+                    shownGame.maxPlayers = resultSet.getInt(5);
+                    shownGame.currentPlayers = resultSet.getInt(6);
+                    shownGame.startTime = resultSet.getLong(7);
+                    shownGame.endTime = resultSet.getLong(8);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        connectionHandler.closeConnectionIfNecessary();
+        return shownGame;
+    }
+
+    public static class game {
+        int gameID = -1;
+        String inviteCode = null;
+        int isPublic = -1;
+        int gameType = -1;
+        int maxPlayers = -1;
+        int currentPlayers = -1;
+        Long startTime = null;
+        Long endTime = null;
     }
 
     public static class Pair<L, R> {

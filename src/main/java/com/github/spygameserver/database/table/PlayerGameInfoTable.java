@@ -5,6 +5,7 @@ import com.github.spygameserver.player.account.AccountVerificationStatus;
 import com.github.spygameserver.player.account.PlayerAccountData;
 import com.github.spygameserver.player.account.PlayerVerificationData;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -105,15 +106,15 @@ public class PlayerGameInfoTable extends AbstractTable {
             ex.printStackTrace();
         }
     }
-}
+
 
 public JSONObject getLeaderboard(ConnectionHandler connectionHandler, int lbSize) {
     Connection connection = connectionHandler.getConnection();
     String insertIntoQuery = formatQuery(GET_LEADERBOARD_QUERY);
 
-    JSONObject leaderboard = new JSONObject;
-    JSONArray usernames = new JSONArray;
-    JSONArray scores = new JSONArray;
+    JSONObject leaderboard = new JSONObject();
+    JSONArray usernames = new JSONArray();
+    JSONArray scores = new JSONArray();
 
     try (PreparedStatement preparedStatement = connection.prepareStatement(insertIntoQuery)) {
         preparedStatement.setInt(1, lbSize);
@@ -131,8 +132,8 @@ public JSONObject getLeaderboard(ConnectionHandler connectionHandler, int lbSize
     } catch (SQLException ex) {
         ex.printStackTrace();
 
-        return leaderboard;
+
     }
-
-
+    return leaderboard;
+}
 }
