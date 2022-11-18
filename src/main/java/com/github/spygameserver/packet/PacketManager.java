@@ -24,4 +24,12 @@ public class PacketManager {
         packetIdToPacketMap.put(abstractPacket.getPacketId(), abstractPacket);
     }
 
+    public GameDatabase getGameDatabase() {
+        return this.gameDatabase;
+    }
+
+    public AuthenticationDatabase getAuthenticationDatabase() {
+        return this.authenticationDatabase;
+    }
+
 }

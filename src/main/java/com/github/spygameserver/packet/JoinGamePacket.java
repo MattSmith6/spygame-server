@@ -2,6 +2,7 @@ package com.github.spygameserver.packet;
 
 import com.github.spygameserver.auth.PlayerEncryptionKey;
 import com.github.spygameserver.database.ConnectionHandler;
+import com.github.spygameserver.database.impl.GameDatabase;
 import com.github.spygameserver.database.table.GameLobbyTable;
 import com.github.spygameserver.packet.AbstractPacket;
 import com.github.spygameserver.packet.PacketManager;
@@ -10,8 +11,9 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.sql.Connection;
 
-public class ServerHandshakePacket extends AbstractPacket {
+public class JoinGamePacket extends AbstractPacket {
 
     private static final int PACKET_ID = 11;cd
 
@@ -19,9 +21,9 @@ public class ServerHandshakePacket extends AbstractPacket {
     int playerID = 1; //Dummy value
     int currentPlayers;
     String code;
-    GameLobbyTable.Pair<> gameStuff =  new GameLobbyTable.Pair<>(gameId, startTime);
+    GameLobbyTable.Pair<Integer, Long> gameStuff = null;
 
-    public ServerHandshakePacket() {
+    public JoinGamePacket() {
         super(PACKET_ID);
     }
 
@@ -32,9 +34,14 @@ public class ServerHandshakePacket extends AbstractPacket {
             // Read object from the reader, can read using #getInt, #getString, etc.
             JSONObject firstReadObject = readJSONObjectFromInput(playerEncryptionKey, bufferedReader);
 
-            code = firstReadObject.getString(invite_code);
+            code = firstReadObject.getString("invite_code");
 
-            gameStuff = GameLobbyTable.getGameIdFromInviteCode(connectionHandler, code);
+            GameDatabase gameDatabase = packetManager.getGameDatabase();
+            GameLobbyTable gameLobbyTable = gameDatabase.getGameLobbyTable();
+
+            ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(false);
+
+            gameStuff = gameLobbyTable.getGameIdFromInviteCode(connectionHandler, code);
             if (gameStuff.getL() == null || gameStuff.getR() != null)
                 canJoinGame = false;
 
@@ -42,14 +49,16 @@ public class ServerHandshakePacket extends AbstractPacket {
             JSONObject objectToSend = new JSONObject();
 
             if (canJoinGame) {
-                currentPlayers = GameLobbyTable.getCurrentPlayers(ConnectionHandler, gameStuff.getL()) + 1;
-                GameLobbyTable.updateCurrentPlayers(connectionHandler, currentPlayers);
+                currentPlayers = gameLobbyTable.getCurrentPlayers(connectionHandler, gameStuff.getL()) + 1;
+                gameLobbyTable.updateCurrentPlayers(connectionHandler, currentPlayers);
 
                 //put the player id in the game
             }
 
+            connectionHandler.setShouldCloseConnectionAfterUse(true);
+            connectionHandler.closeConnectionIfNecessary();
 
-            objectToSend.put("success", canJoinGame).toBoolean();
+            objectToSend.put("success", canJoinGame);
 
             // Write the JSON object to the player's app
             writeJSONObjectToOutput(playerEncryptionKey, objectToSend, bufferedWriter);
