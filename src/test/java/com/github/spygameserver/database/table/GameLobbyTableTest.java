@@ -39,11 +39,12 @@ public class GameLobbyTableTest {
 
     @Test
     public void testAllPaths() {
-        String code = "aaaaaa";
+        String inviteCode = null;
 
         gameLobbyTable.createTableIfNotExists(connectionHandler);
-        gameLobbyTable.createGame(connectionHandler, code, 0, 0, 1);
-        GameLobbyTable.Pair<Integer, Long> gameStuff = gameLobbyTable.getGameIdFromInviteCode(connectionHandler, "aaaaaa");
+        gameLobbyTable.createGame(connectionHandler, 0, 0, 1);
+        inviteCode = gameLobbyTable.getInviteCode(connectionHandler, 1);
+        GameLobbyTable.Pair<Integer, Long> gameStuff = gameLobbyTable.getGameIdFromInviteCode(connectionHandler, inviteCode);
 
         Assertions.assertTrue(gameStuff.getR() == null);
         Assertions.assertTrue(gameLobbyTable.getCurrentPlayers(connectionHandler, gameStuff.getL()) == 0);
@@ -53,7 +54,7 @@ public class GameLobbyTableTest {
         Assertions.assertTrue(gameLobbyTable.getCurrentPlayers(connectionHandler, gameStuff.getL()) == 5);
 
         GameLobbyTable.game testGame = new GameLobbyTable.game();
-        testGame = gameLobbyTable.showAll(connectionHandler, code);
+        testGame = gameLobbyTable.showAll(connectionHandler, inviteCode);
 
         Assertions.assertTrue(testGame.startTime == null);
         Assertions.assertTrue(testGame.endTime == null);
