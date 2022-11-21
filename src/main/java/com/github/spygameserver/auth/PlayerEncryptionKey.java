@@ -39,6 +39,10 @@ public class PlayerEncryptionKey {
         return playerId != -1;
     }
 
+    public int getPlayerId() {
+        return playerId;
+    }
+
     public String encryptJSONObject(JSONObject jsonObject) {
         if (!isInitialized()) {
             throw new IllegalStateException("Cannot encrypt without an initialized encryption key.");
