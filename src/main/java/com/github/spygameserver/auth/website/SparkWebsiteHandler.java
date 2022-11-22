@@ -20,7 +20,10 @@ public class SparkWebsiteHandler {
 
             Spark.path("/email", () -> Spark.post("/verify", new AddVerifiedEmailRoute(gameDatabase)));
 
-            Spark.path("/username", () -> Spark.post("/get", new GetAccountUsernameRoute(gameDatabase)));
+            Spark.path("/username", () -> {
+                    Spark.post("/get", new GetAccountUsernameRoute(gameDatabase));
+                    Spark.get("/check/:username", new CheckUsernameExistsRoute(gameDatabase));
+            });
 
             Spark.post("/register", new AddUsernameEmailRoute(gameDatabase, authenticationDatabase));
 

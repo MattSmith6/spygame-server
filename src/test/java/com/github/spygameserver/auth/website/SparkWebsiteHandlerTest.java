@@ -20,12 +20,12 @@ import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -52,12 +52,14 @@ import java.util.function.Consumer;
  * 2. Choosing a username and password (step 2/2 for account creation)
  * 3. Resetting password
  * 4. Recovering lost username
+ * 5. Check username exists (for account screen integration)
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
 
-    private static final String USERNAME_PATH = "account/username/get";
+    private static final String RECOVER_USERNAME_PATH = "account/username/get";
+    private static final String CHECK_USERNAME_PATH = "account/username/check/%s";
     private static final String RESET_PASSWORD_PATH = "account/reset";
     private static final String VERIFY_EMAIL_PATH = "account/email/verify";
     private static final String REGISTER_ACCOUNT_PATH = "account/register";
@@ -122,6 +124,12 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
     }
 
     @Test
+    @Order(1)
+    public void testUsernameDoesNotExist() {
+        createCheckUsernameDoesNotExistTest();
+    }
+
+    @Test
     @Order(2)
     public void testVerifyEmail() {
         createVerifyEmailTest(getFailOnErrorConsumer());
@@ -171,6 +179,12 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
 
     @Test
     @Order(5)
+    public void testUsernameDoesExist() {
+        createCheckUsernameDoesExistTest();
+    }
+
+    @Test
+    @Order(5)
     public void testValidUsernameGetOnCompletedAccount() {
         // Check if the username returned by the service matches the expected username
         createGetUsernameTest(jsonObject -> Assertions.assertEquals(jsonObject.getString("username"), VALID_USERNAME));
@@ -198,8 +212,20 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
         createRegisterAccountTest(withExpectedErrorMessage("This account has already chosen a username."));
     }
 
+    private void createCheckUsernameDoesExistTest() {
+        createCheckUsernameExistsTest(jsonObject -> Assertions.assertTrue(jsonObject.getBoolean("exists")));
+    }
+
+    private void createCheckUsernameDoesNotExistTest() {
+        createCheckUsernameExistsTest(jsonObject -> Assertions.assertFalse(jsonObject.getBoolean("exists")));
+    }
+
+    private void createCheckUsernameExistsTest(Consumer<JSONObject> jsonObjectConsumer) {
+        createGetTest(String.format(CHECK_USERNAME_PATH, VALID_USERNAME), jsonObjectConsumer);
+    }
+
     private void createGetUsernameTest(Consumer<JSONObject> jsonObjectConsumer) {
-        createPostTest(USERNAME_PATH, jsonObjectConsumer);
+        createPostTest(RECOVER_USERNAME_PATH, jsonObjectConsumer);
     }
 
     private void createGetTest(String path, Consumer<JSONObject> jsonObjectConsumer) {
@@ -296,10 +322,7 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
     }
 
     private HttpGet makeGetRequest(String path, Map<String, String> keyValuePairs) {
-        HttpGet getRequest = new HttpGet(getUrlFromPath(path));
-        getRequest.setEntity(getEntity(keyValuePairs));
-
-        return getRequest;
+        return new HttpGet(getUrlFromPath(path));
     }
 
     private HttpPost makePostRequest(String path, Map<String, String> keyValuePairs) {
@@ -314,13 +337,17 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
     }
 
     private HttpEntity getEntity(Map<String, String> keyValuePairs) {
+        return new UrlEncodedFormEntity(getNameValuePairList(keyValuePairs));
+    }
+
+    private List<NameValuePair> getNameValuePairList(Map<String, String> keyValuePairs) {
         List<NameValuePair> nameValuePairs = new ArrayList<>(keyValuePairs.size());
 
         for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
             nameValuePairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
         }
 
-        return new UrlEncodedFormEntity(nameValuePairs);
+        return nameValuePairs;
     }
 
     @AfterAll

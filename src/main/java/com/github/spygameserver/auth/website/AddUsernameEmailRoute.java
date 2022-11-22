@@ -11,8 +11,11 @@ import spark.Response;
 
 import java.nio.ByteOrder;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class AddUsernameEmailRoute extends VerificationRoute {
+
+    private static final Pattern VALID_USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]*$");
 
     private final GameDatabase gameDatabase;
     private final AuthenticationDatabase authenticationDatabase;
@@ -46,6 +49,14 @@ public class AddUsernameEmailRoute extends VerificationRoute {
 
         if (username == null) {
             return getErrorObject("Null username");
+        }
+
+        if (username.length() > 16) {
+            return getErrorObject("Invalid username length");
+        }
+
+        if (!VALID_USERNAME_PATTERN.matcher(username).matches()) {
+            return getErrorObject("Invalid username characters.");
         }
 
         connectionHandler = gameDatabase.getNewConnectionHandler(true);
