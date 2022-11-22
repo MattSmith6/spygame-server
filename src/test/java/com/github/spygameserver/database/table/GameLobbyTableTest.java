@@ -40,9 +40,10 @@ public class GameLobbyTableTest implements DatabaseRequiredTest {
     @Test
     public void testAllPaths() {
         String inviteCode = null;
+        String gameName = "Test Game";
 
         gameLobbyTable.createTableIfNotExists(connectionHandler);
-        gameLobbyTable.createGame(connectionHandler, 0, 0, 1);
+        gameLobbyTable.createGame(connectionHandler, 0, 0, 1, gameName);
         inviteCode = gameLobbyTable.getInviteCode(connectionHandler, 1);
         GameLobbyTable.Pair<Integer, Long> gameStuff = gameLobbyTable.getGameIdFromInviteCode(connectionHandler, inviteCode);
 
