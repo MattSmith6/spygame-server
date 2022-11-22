@@ -43,8 +43,10 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /**
- * The test will not work once the token field is required, as these are dummy variables with no authentication.
- * Ensuring that this test passes before implementation of the CSUN email verification allows for component testing to be conducted.
+ * The test will break work once the token field is required for email verification, as these are dummy variables.
+ * Ensuring that this test passes before implementation of the email verification allows testing to be conducted on the app,
+ * while knowing that all server website functions work correctly when the verification works correctly.
+ *
  * This test is designed to test the functionality of all the spark handler subprocesses:
  * 1. Adding a verified email (step 1/2 for account creation)
  * 2. Choosing a username and password (step 2/2 for account creation)
@@ -75,7 +77,6 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
     private SparkWebsiteHandler sparkWebsiteHandler;
 
     @BeforeAll
-    @Order(0)
     public void setupDatabases() {
         gameDatabase = getGameDatabase();
         ConnectionHandler gameConnectionHandler = gameDatabase.getNewConnectionHandler(false);
