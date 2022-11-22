@@ -1,13 +1,9 @@
 package com.github.spygameserver.database.table;
 
-import com.github.spygameserver.DatabaseRequiredTest;
 import com.github.spygameserver.database.ConnectionHandler;
 import com.github.spygameserver.database.DatabaseCreator;
 import com.github.spygameserver.database.impl.GameDatabase;
-import com.github.spygameserver.player.account.AccountVerificationStatus;
-import com.github.spygameserver.player.account.PlayerAccountData;
-import com.github.spygameserver.player.account.PlayerVerificationData;
-import com.github.spygameserver.database.table.GameLobbyTable;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
