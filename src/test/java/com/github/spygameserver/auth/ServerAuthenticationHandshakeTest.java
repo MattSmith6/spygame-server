@@ -51,8 +51,6 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
     private static final Bytes USERNAME_BYTES = new PlainText(USERNAME);
     private static final Bytes PASSWORD_BYTES = new PlainText(PASSWORD);
 
-    public static final Logger LOG = Logger.getLogger(ServerAuthenticationHandshakeTest.class.getName());
-
     private GameDatabase gameDatabase;
     private AuthenticationDatabase authenticationDatabase;
 

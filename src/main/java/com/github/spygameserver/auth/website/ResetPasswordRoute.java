@@ -9,6 +9,8 @@ import com.github.spygameserver.player.account.PlayerAccountData;
 import org.json.JSONObject;
 import spark.Response;
 
+import java.util.Map;
+
 public class ResetPasswordRoute extends VerificationRoute {
 
     private final GameDatabase gameDatabase;
@@ -20,8 +22,8 @@ public class ResetPasswordRoute extends VerificationRoute {
     }
 
     @Override
-    public JSONObject handleAdditional(JSONObject requestBody, Response response) {
-        String email = requestBody.getString("email");
+    public JSONObject handleAdditional(JSONObject jsonObject, Response response) {
+        String email = getEmail(jsonObject);
 
         ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
         PlayerAccountData playerAccountData = gameDatabase.getPlayerAccountTable()
@@ -37,7 +39,11 @@ public class ResetPasswordRoute extends VerificationRoute {
 
         int playerId = playerAccountData.getPlayerId();
         String username = playerAccountData.getUsername();
-        String password = requestBody.getString("password");
+        String password = jsonObject.getString("password");
+
+        if (password == null) {
+            return getErrorObject("Null password");
+        }
 
         PlayerAuthenticationData playerAuthenticationData = new PlayerAuthenticationData(playerId, username, password);
 

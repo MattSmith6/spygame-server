@@ -1,10 +1,12 @@
 package com.github.spygameserver.auth.website;
 
 import org.json.JSONObject;
-import org.json.JSONTokener;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 public abstract class VerificationRoute implements Route {
 
@@ -12,17 +14,36 @@ public abstract class VerificationRoute implements Route {
 
     @Override
     public Object handle(Request request, Response response) throws Exception {
-        JSONTokener requestBodyTokener = new JSONTokener(request.body());
-        JSONObject requestBody = new JSONObject(requestBodyTokener);
+        response.type("application/json");
+        JSONObject jsonObject = parseRequestIntoJSON(request.body());
 
-        if (!GoogleEmailVerifier.isCSUNEmailVerified(requestBody)) {
+        if (!GoogleEmailVerifier.isCSUNEmailVerified(jsonObject)) {
             return getErrorObject("Unable to verify your CSUN email.");
         }
 
-        return handleAdditional(requestBody, response).toString();
+        return handleAdditional(jsonObject, response).toString();
     }
 
-    public abstract JSONObject handleAdditional(JSONObject requestBody, Response response);
+    private JSONObject parseRequestIntoJSON(String body) {
+        JSONObject jsonObject = new JSONObject();
+
+        for (String keyValuePair : body.split("&")) {
+
+            String[] keyValueSplit = keyValuePair.split("=");
+            String key = keyValueSplit[0];
+            String value = URLDecoder.decode(keyValueSplit[1], StandardCharsets.UTF_8);
+
+            jsonObject.put(key, value);
+        }
+
+        return jsonObject;
+    }
+
+    public abstract JSONObject handleAdditional(JSONObject jsonObject, Response response);
+
+    protected String getEmail(JSONObject jsonObject) {
+        return jsonObject.getString("email");
+    }
 
     protected JSONObject getErrorObject(String errorMessage) {
         JSONObject jsonObject = new JSONObject();

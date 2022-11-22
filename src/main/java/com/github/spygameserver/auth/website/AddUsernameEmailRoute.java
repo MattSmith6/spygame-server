@@ -9,6 +9,9 @@ import com.github.spygameserver.player.account.PlayerAccountData;
 import org.json.JSONObject;
 import spark.Response;
 
+import java.nio.ByteOrder;
+import java.util.Map;
+
 public class AddUsernameEmailRoute extends VerificationRoute {
 
     private final GameDatabase gameDatabase;
@@ -20,12 +23,11 @@ public class AddUsernameEmailRoute extends VerificationRoute {
     }
 
     @Override
-    public JSONObject handleAdditional(JSONObject requestBody, Response response) {
+    public JSONObject handleAdditional(JSONObject jsonObject, Response response) {
         ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
         PlayerAccountTable playerAccountTable = gameDatabase.getPlayerAccountTable();
 
-        String email = requestBody.getString("email");
-
+        String email = getEmail(jsonObject);
         PlayerAccountData playerAccountData = playerAccountTable.getPlayerAccountDataByEmail(connectionHandler, email);
 
         // If there is no record in the game table at all, there is no account (first step is not finished)
@@ -40,17 +42,25 @@ public class AddUsernameEmailRoute extends VerificationRoute {
             return getErrorObject("This account has already chosen a username.");
         }
 
-        String username = requestBody.getString("username");
+        String username = jsonObject.getString("username");
+
+        if (username == null) {
+            return getErrorObject("Null username");
+        }
+
+        connectionHandler = gameDatabase.getNewConnectionHandler(true);
 
         // If the account table already exists
         if (playerAccountTable.doesUsernameAlreadyExist(connectionHandler, username)) {
             return getErrorObject("This username already exists for another account.");
         }
 
-        connectionHandler.closeAbsolutely();
-
         int playerId = playerAccountData.getPlayerId();
-        String password = requestBody.getString("password");
+        String password = jsonObject.getString("password");
+
+        if (password == null) {
+            return getErrorObject("Null password");
+        }
 
         PlayerAuthenticationData playerAuthenticationData = new PlayerAuthenticationData(playerId, username, password);
 
@@ -59,7 +69,9 @@ public class AddUsernameEmailRoute extends VerificationRoute {
         authenticationDatabase.getAuthenticationTable().addPlayerAuthenticationRecord(connectionHandler,
                 playerAuthenticationData);
 
-        connectionHandler.closeAbsolutely();
+        // Add username to the database
+        connectionHandler = gameDatabase.getNewConnectionHandler(true);
+        playerAccountTable.addUsernameToPlayerAccount(connectionHandler, email, username);
 
         return getSuccessObject();
     }

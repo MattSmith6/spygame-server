@@ -6,6 +6,8 @@ import com.github.spygameserver.database.table.PlayerAccountTable;
 import org.json.JSONObject;
 import spark.Response;
 
+import java.util.Map;
+
 public class AddVerifiedEmailRoute extends VerificationRoute {
 
     private final GameDatabase gameDatabase;
@@ -15,8 +17,8 @@ public class AddVerifiedEmailRoute extends VerificationRoute {
     }
 
     @Override
-    public JSONObject handleAdditional(JSONObject requestBody, Response response) {
-        String email = requestBody.getString("email");
+    public JSONObject handleAdditional(JSONObject jsonObject, Response response) {
+        String email = getEmail(jsonObject);
 
         ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(false);
         PlayerAccountTable playerAccountTable = gameDatabase.getPlayerAccountTable();

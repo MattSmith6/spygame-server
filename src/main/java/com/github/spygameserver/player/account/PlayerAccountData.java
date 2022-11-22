@@ -1,5 +1,7 @@
 package com.github.spygameserver.player.account;
 
+import java.util.Objects;
+
 public class PlayerAccountData {
 
     private final int playerId;
@@ -44,7 +46,7 @@ public class PlayerAccountData {
         PlayerAccountData otherAccountData = (PlayerAccountData) other;
 
         return getPlayerId() == otherAccountData.getPlayerId() && getEmail().equals(otherAccountData.getEmail())
-                && getUsername().equals(otherAccountData.getUsername())
+                && Objects.equals(getUsername(), otherAccountData.getUsername())
                 && getAccountVerificationStatus() == otherAccountData.getAccountVerificationStatus();
     }
 
