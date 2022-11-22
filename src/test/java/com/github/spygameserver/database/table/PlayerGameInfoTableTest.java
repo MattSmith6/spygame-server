@@ -1,5 +1,6 @@
 package com.github.spygameserver.database.table;
 
+import com.github.spygameserver.DatabaseRequiredTest;
 import com.github.spygameserver.database.ConnectionHandler;
 import com.github.spygameserver.database.DatabaseCreator;
 import com.github.spygameserver.database.impl.GameDatabase;
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.TestInstance;
 import java.io.File;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class PlayerGameInfoTableTest {
+public class PlayerGameInfoTableTest implements DatabaseRequiredTest {
 
     private PlayerGameInfoTable playerGameInfoTable;
     private ConnectionHandler connectionHandler;

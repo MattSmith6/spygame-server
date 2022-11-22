@@ -17,7 +17,7 @@ import org.junit.jupiter.api.TestInstance;
 import java.io.File;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class GameLobbyTableTest {
+public class GameLobbyTableTest implements DatabaseRequiredTest {
 
     private GameLobbyTable gameLobbyTable;
     private ConnectionHandler connectionHandler;
