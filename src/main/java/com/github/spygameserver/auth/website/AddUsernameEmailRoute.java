@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 public class AddUsernameEmailRoute extends VerificationRoute {
 
-    private static final Pattern VALID_USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]*$");
+    private static final Pattern VALID_USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]+$");
 
     private final GameDatabase gameDatabase;
     private final AuthenticationDatabase authenticationDatabase;
