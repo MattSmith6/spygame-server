@@ -333,7 +333,7 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
     }
 
     private String getUrlFromPath(String path) {
-        return "http://localhost:4567/" + path;
+        return "http://localhost:80/" + path;
     }
 
     private HttpEntity getEntity(Map<String, String> keyValuePairs) {

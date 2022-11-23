@@ -16,6 +16,8 @@ public interface DatabaseRequiredTest {
     String INVALID_CREDENTIALS_FILE = "invalid_database_credentials.properties";
     String NON_EXISTANT_CREDENTIALS_FILE = "non_existant.properties";
 
+    String SQL_CERTIFICATE_FILE = "ca-certificate.crt";
+
     default File getValidCredentialsFile() {
         return getResource(VALID_CREDENTIALS_FILE);
     }
@@ -26,6 +28,10 @@ public interface DatabaseRequiredTest {
 
     default File getNonExistantCredentialsFile() {
         return getNonExistantResource(VALID_CREDENTIALS_FILE, NON_EXISTANT_CREDENTIALS_FILE);
+    }
+
+    default File getCertificateFile() {
+        return getResource(SQL_CERTIFICATE_FILE);
     }
 
     default File getResource(String resourceName) {
@@ -40,7 +46,7 @@ public interface DatabaseRequiredTest {
     default <T extends AbstractDatabase> T getDatabase(DatabaseType databaseType,
                                                        BiFunction<DatabaseConnectionManager, Boolean, T> databaseConstructor) {
         DatabaseCreator<T> databaseCreator = new DatabaseCreator<>(getValidCredentialsFile(),
-                databaseType.getDatabasePath(), true);
+                databaseType.getDatabasePath(), getCertificateFile(), true);
         return databaseCreator.createDatabaseFromFile(databaseConstructor);
     }
 

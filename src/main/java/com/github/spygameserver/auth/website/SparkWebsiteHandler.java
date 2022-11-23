@@ -16,6 +16,8 @@ public class SparkWebsiteHandler {
     }
 
     private void setupVerifyEmailPostRequest(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
+        Spark.port(80);
+
         Spark.path("/account", () -> {
 
             Spark.path("/email", () -> Spark.post("/verify", new AddVerifiedEmailRoute(gameDatabase)));

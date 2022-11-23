@@ -15,7 +15,7 @@ import java.sql.SQLException;
 public class DatabaseCreatorTest implements DatabaseRequiredTest {
 
     private DatabaseCreator<AuthenticationDatabase> getNewDatabaseCreator(File file, String databasePath) {
-        return new DatabaseCreator<>(file, databasePath, true);
+        return new DatabaseCreator<>(file, databasePath, getCertificateFile(), true);
     }
 
     @Test

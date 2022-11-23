@@ -9,7 +9,7 @@ import java.util.Properties;
 
 public class DatabaseCredentialsProcessor {
 
-    private static final String DATABASE_CONNECTION_URL_FORMAT = "jdbc:mysql://%s:%s/%s";
+    private static final String DATABASE_CONNECTION_URL_FORMAT = "jdbc:mysql://%s:%s/%s?useSSL=true&trustCertificateKeyStoreUrl=file:\\%s";
 
     private static final String HOST_PATH = "host";
     private static final String PORT_PATH = "port";
@@ -18,38 +18,46 @@ public class DatabaseCredentialsProcessor {
     private static final String USERNAME_PATH = "username";
     private static final String PASSWORD_PATH = "password";
 
-    private final File file;
+    private final File credentialsFile;
     private final Properties properties;
 
     private final String databasePath;
     private final boolean didFileExist;
 
-    public DatabaseCredentialsProcessor(File file, String databasePath) {
-        this.file = file;
+    private final String certificatePath;
+
+    public DatabaseCredentialsProcessor(File credentialsFile, String databasePath, File certificate) {
+        this.credentialsFile = credentialsFile;
         this.properties = new Properties();
 
         this.databasePath = databasePath.endsWith(".") ? databasePath : databasePath + ".";
 
-        this.didFileExist = file.exists();
+        this.didFileExist = credentialsFile.exists();
+        this.certificatePath = certificate.getAbsolutePath();
+
         if (!didFileExist) {
             createPropertiesFileAndSetDefaults();
             return;
         }
 
-        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+        try (InputStream inputStream = Files.newInputStream(credentialsFile.toPath())) {
             properties.load(inputStream);
         } catch (IOException ex) {
             // This should never occur, as we already checked if the file does not exist
             ex.printStackTrace();
         }
+
+        if (!certificate.exists()) {
+            throw new IllegalStateException("Could not find certificate file to connect to remote SQL database.");
+        }
     }
 
     private void createPropertiesFileAndSetDefaults() {
         try {
-            file.createNewFile();
+            credentialsFile.createNewFile();
             setFileDefaults();
 
-            try (FileWriter fileWriter = new FileWriter(file)) {
+            try (FileWriter fileWriter = new FileWriter(credentialsFile)) {
                 properties.store(fileWriter, "Auto-generated, configure this file for database connections");
             }
         } catch (IOException ex) {
@@ -78,7 +86,7 @@ public class DatabaseCredentialsProcessor {
     }
 
     public String getDatabaseConnectionUrl() {
-        return String.format(DATABASE_CONNECTION_URL_FORMAT, getHost(), getPort(), getDatabase());
+        return String.format(DATABASE_CONNECTION_URL_FORMAT, getHost(), getPort(), getDatabase(), certificatePath);
     }
 
     public String getHost() {

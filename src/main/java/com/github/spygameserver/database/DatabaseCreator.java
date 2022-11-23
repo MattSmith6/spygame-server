@@ -16,13 +16,13 @@ public class DatabaseCreator<T extends AbstractDatabase> {
     private final DatabaseCredentialsProcessor databaseCredentialsProcessor;
     private final boolean useTestTables;
 
-    public DatabaseCreator(File directory, String fileName, String databasePath, boolean useTestTables) {
-        this(new File(directory, fileName), databasePath, useTestTables);
+    public DatabaseCreator(File directory, String fileName, String databasePath, File certificate, boolean useTestTables) {
+        this(new File(directory, fileName), databasePath, certificate, useTestTables);
     }
 
-    public DatabaseCreator(File credentialsFile, String databasePath, boolean useTestTables) {
+    public DatabaseCreator(File credentialsFile, String databasePath, File certificate, boolean useTestTables) {
         this.filePath = credentialsFile.getPath();
-        this.databaseCredentialsProcessor = new DatabaseCredentialsProcessor(credentialsFile, databasePath);
+        this.databaseCredentialsProcessor = new DatabaseCredentialsProcessor(credentialsFile, databasePath, certificate);
         this.useTestTables = useTestTables;
     }
 
