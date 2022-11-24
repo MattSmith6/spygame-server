@@ -24,4 +24,8 @@ public class PacketManager {
         packetIdToPacketMap.put(abstractPacket.getPacketId(), abstractPacket);
     }
 
+    public AbstractPacket getPacket(int packetNumber) {
+        return packetIdToPacketMap.get(packetNumber);
+    }
+
 }

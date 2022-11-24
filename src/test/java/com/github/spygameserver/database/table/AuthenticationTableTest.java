@@ -3,6 +3,7 @@ package com.github.spygameserver.database.table;
 import com.github.glusk.caesar.Bytes;
 import com.github.glusk.caesar.Hex;
 import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
+import com.github.glusk.srp6_variables.SRP6IntegerVariable;
 import com.github.spygameserver.DatabaseRequiredTest;
 import com.github.spygameserver.auth.PlayerAuthenticationData;
 import com.github.spygameserver.database.ConnectionHandler;
@@ -11,7 +12,6 @@ import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -23,15 +23,13 @@ public class AuthenticationTableTest implements DatabaseRequiredTest {
 
     private static final int TEST_PLAYER_ID = 101;
 
+    private AuthenticationDatabase authenticationDatabase;
     private AuthenticationTable authenticationTable;
     private ConnectionHandler connectionHandler;
 
     @BeforeAll
     public void setupAuthenticationTable() {
-        File file = getValidCredentialsFile();
-
-        DatabaseCreator<AuthenticationDatabase> databaseCreator = new DatabaseCreator<>(file, "auth_db", true);
-        AuthenticationDatabase authenticationDatabase = databaseCreator.createDatabaseFromFile(AuthenticationDatabase::new);
+        authenticationDatabase = getAuthenticationDatabase();
 
         authenticationTable = authenticationDatabase.getAuthenticationTable();
         connectionHandler = authenticationDatabase.getNewConnectionHandler(false);
@@ -75,18 +73,19 @@ public class AuthenticationTableTest implements DatabaseRequiredTest {
     @AfterAll
     @Override
     public void closeOpenConnections() {
+        closeOpenConnections(authenticationDatabase);
         closeOpenConnections(connectionHandler);
     }
 
-    private SRP6CustomIntegerVariable getExampleSalt(char c) {
-        return repeatCharacter(c, 32);
+    private Bytes getExampleSalt(char c) {
+        return repeatCharacter(c, 64);
     }
 
-    private SRP6CustomIntegerVariable getExampleVerifier(char c) {
-        return repeatCharacter(c, 256);
+    private SRP6IntegerVariable getExampleVerifier(char c) {
+        return new SRP6CustomIntegerVariable(repeatCharacter(c, 256), ByteOrder.BIG_ENDIAN);
     }
 
-    private SRP6CustomIntegerVariable repeatCharacter(char c, int numTimes) {
+    private Hex repeatCharacter(char c, int numTimes) {
         StringBuilder stringBuilder = new StringBuilder();
 
         for (int i = 1; i <= numTimes; i++) {
@@ -94,7 +93,7 @@ public class AuthenticationTableTest implements DatabaseRequiredTest {
         }
 
         String bytesStringForm = stringBuilder.toString();
-        return new SRP6CustomIntegerVariable(new Hex(bytesStringForm), ByteOrder.BIG_ENDIAN);
+        return new Hex(bytesStringForm);
     }
 
 }

@@ -1,7 +1,5 @@
 package com.github.spygameserver.auth;
 
-import java.util.Map;
-
 public class PlayerLoginManager {
 
     /*

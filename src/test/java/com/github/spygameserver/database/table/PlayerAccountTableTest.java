@@ -24,15 +24,13 @@ public class PlayerAccountTableTest implements DatabaseRequiredTest {
     private static final String TEST_INVALID_EMAIL = "phil@my.csun.edu";
     private static final String TEST_INVALID_USERNAME = "philly_cheesesteak";
 
+    private GameDatabase gameDatabase;
     private PlayerAccountTable playerAccountTable;
     private ConnectionHandler connectionHandler;
 
     @BeforeAll
     public void setupConnection() {
-        File credentials = getValidCredentialsFile();
-
-        DatabaseCreator<GameDatabase> databaseCreator = new DatabaseCreator<>(credentials, "game_db", true);
-        GameDatabase gameDatabase = databaseCreator.createDatabaseFromFile(GameDatabase::new);
+        gameDatabase = getGameDatabase();
 
         playerAccountTable = gameDatabase.getPlayerAccountTable();
         connectionHandler = gameDatabase.getNewConnectionHandler(false);
@@ -126,6 +124,7 @@ public class PlayerAccountTableTest implements DatabaseRequiredTest {
     @AfterAll
     @Override
     public void closeOpenConnections() {
+        closeOpenConnections(gameDatabase);
         closeOpenConnections(connectionHandler);
     }
 

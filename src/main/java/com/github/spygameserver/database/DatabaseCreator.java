@@ -1,8 +1,8 @@
 package com.github.spygameserver.database;
 
 import com.github.spygameserver.database.impl.AbstractDatabase;
+import com.zaxxer.hikari.HikariConfig;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.BiFunction;
@@ -12,29 +12,21 @@ import java.util.function.BiFunction;
  */
 public class DatabaseCreator<T extends AbstractDatabase> {
 
-    private final String filePath;
-    private final DatabaseCredentialsProcessor databaseCredentialsProcessor;
+    private static final String RESOURCES_DIRECTORY = "hikari";
+
+    private final DatabaseType databaseType;
     private final boolean useTestTables;
 
-    public DatabaseCreator(File directory, String fileName, String databasePath, boolean useTestTables) {
-        this(new File(directory, fileName), databasePath, useTestTables);
-    }
-
-    public DatabaseCreator(File credentialsFile, String databasePath, boolean useTestTables) {
-        this.filePath = credentialsFile.getPath();
-        this.databaseCredentialsProcessor = new DatabaseCredentialsProcessor(credentialsFile, databasePath);
+    public DatabaseCreator(DatabaseType databaseType, boolean useTestTables) {
+        this.databaseType = databaseType;
         this.useTestTables = useTestTables;
     }
 
-    public T createDatabaseFromFile(BiFunction<DatabaseConnectionManager, Boolean, T> databaseConstructor) {
-        if (!databaseCredentialsProcessor.didFileExistOnStartup()) {
-            String errorMessage = "Configuration file did not exist. Configure the database credentials in the file "
-                    + "located at %s and rerun the program.";
+    public T createDatabase(BiFunction<DatabaseConnectionManager, Boolean, T> databaseConstructor) {
+        HikariConfig hikariConfig = new HikariConfig(databaseType.getHikariProperties());
+        hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
-            throw new IllegalStateException(String.format(errorMessage, filePath));
-        }
-
-        DatabaseConnectionManager databaseConnectionManager = new DatabaseConnectionManager(databaseCredentialsProcessor);
+        DatabaseConnectionManager databaseConnectionManager = new DatabaseConnectionManager(hikariConfig);
 
         try (Connection connection = databaseConnectionManager.createNewConnection()) {
             // ignore, we're just seeing if a connection could be obtained at all

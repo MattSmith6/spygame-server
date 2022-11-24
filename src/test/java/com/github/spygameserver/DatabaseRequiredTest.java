@@ -1,41 +1,40 @@
 package com.github.spygameserver;
 
 import com.github.spygameserver.database.ConnectionHandler;
+import com.github.spygameserver.database.DatabaseConnectionManager;
+import com.github.spygameserver.database.DatabaseCreator;
+import com.github.spygameserver.database.DatabaseType;
+import com.github.spygameserver.database.impl.AbstractDatabase;
+import com.github.spygameserver.database.impl.AuthenticationDatabase;
+import com.github.spygameserver.database.impl.GameDatabase;
+import com.github.spygameserver.util.ExceptionHandling;
 
-import java.io.File;
+import java.util.function.BiFunction;
 
 public interface DatabaseRequiredTest {
 
-    String VALID_CREDENTIALS_FILE = "database_credentials.properties";
-    String INVALID_CREDENTIALS_FILE = "invalid_database_credentials.properties";
-    String NON_EXISTANT_CREDENTIALS_FILE = "non_existant.properties";
-
-    default File getValidCredentialsFile() {
-        return getResource(VALID_CREDENTIALS_FILE);
+    default <T extends AbstractDatabase> T getDatabase(DatabaseType databaseType,
+                                                       BiFunction<DatabaseConnectionManager, Boolean, T> databaseConstructor) {
+        DatabaseCreator<T> databaseCreator = new DatabaseCreator<>(databaseType, true);
+        return databaseCreator.createDatabase(databaseConstructor);
     }
 
-    default File getInvalidCredentialsFile() {
-        return getResource(INVALID_CREDENTIALS_FILE);
+    default GameDatabase getGameDatabase() {
+        return getDatabase(DatabaseType.GAME, GameDatabase::new);
     }
 
-    default File getNonExistantCredentialsFile() {
-        return getNonExistantResource(VALID_CREDENTIALS_FILE, NON_EXISTANT_CREDENTIALS_FILE);
-    }
-
-    default File getResource(String resourceName) {
-        return new File(getClass().getClassLoader().getResource(resourceName).getFile());
-    }
-
-    default File getNonExistantResource(String realResourceName, String fakeResourceName) {
-        File resourceDirectory = getResource(realResourceName).getParentFile();
-        return new File(resourceDirectory, fakeResourceName);
+    default AuthenticationDatabase getAuthenticationDatabase() {
+        return getDatabase(DatabaseType.AUTHENTICATION, AuthenticationDatabase::new);
     }
 
     void closeOpenConnections();
 
     default void closeOpenConnections(ConnectionHandler connectionHandler) {
-        connectionHandler.setShouldCloseConnectionAfterUse(true);
-        connectionHandler.closeConnectionIfNecessary();
+        connectionHandler.closeAbsolutely();
+    }
+
+    default void closeOpenConnections(AutoCloseable... autoCloseables) {
+        ExceptionHandling.closeQuietly(autoCloseables);
     }
 
 }
