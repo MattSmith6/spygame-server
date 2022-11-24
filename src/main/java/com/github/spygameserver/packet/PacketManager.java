@@ -28,4 +28,12 @@ public class PacketManager {
         return packetIdToPacketMap.get(packetNumber);
     }
 
+    public GameDatabase getGameDatabase() {
+        return this.gameDatabase;
+    }
+
+    public AuthenticationDatabase getAuthenticationDatabase() {
+        return this.authenticationDatabase;
+    }
+
 }
