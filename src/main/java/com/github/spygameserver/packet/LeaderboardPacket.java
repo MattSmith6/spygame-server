@@ -22,10 +22,7 @@ public class LeaderboardPacket extends AbstractPacket {
 
     private static final int PACKET_ID = 12;
 
-    int leaderboardSize = 5;
-    String usernames[];
-    int scores[];
-    int i;
+    int lbsize = 5;
 
     public LeaderboardPacket() {
         super(PACKET_ID);
@@ -46,7 +43,7 @@ public class LeaderboardPacket extends AbstractPacket {
 
             ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
 
-            objectToSend = gameInfoTable.getLeaderboard(connectionHandler, 5);
+            objectToSend = gameInfoTable.getLeaderboard(connectionHandler, lbsize);
 
             // Write the JSON object to the player's app
             writeJSONObjectToOutput(playerEncryptionKey, objectToSend, bufferedWriter);
