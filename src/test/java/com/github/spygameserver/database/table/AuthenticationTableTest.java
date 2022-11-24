@@ -23,12 +23,13 @@ public class AuthenticationTableTest implements DatabaseRequiredTest {
 
     private static final int TEST_PLAYER_ID = 101;
 
+    private AuthenticationDatabase authenticationDatabase;
     private AuthenticationTable authenticationTable;
     private ConnectionHandler connectionHandler;
 
     @BeforeAll
     public void setupAuthenticationTable() {
-        AuthenticationDatabase authenticationDatabase = getAuthenticationDatabase();
+        authenticationDatabase = getAuthenticationDatabase();
 
         authenticationTable = authenticationDatabase.getAuthenticationTable();
         connectionHandler = authenticationDatabase.getNewConnectionHandler(false);
@@ -72,6 +73,7 @@ public class AuthenticationTableTest implements DatabaseRequiredTest {
     @AfterAll
     @Override
     public void closeOpenConnections() {
+        closeOpenConnections(authenticationDatabase);
         closeOpenConnections(connectionHandler);
     }
 

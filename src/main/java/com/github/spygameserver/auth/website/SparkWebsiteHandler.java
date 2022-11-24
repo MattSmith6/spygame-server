@@ -2,12 +2,9 @@ package com.github.spygameserver.auth.website;
 
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.impl.GameDatabase;
-import spark.ExceptionHandlerImpl;
-import spark.Request;
-import spark.Response;
 import spark.Spark;
 
-import java.util.Arrays;
+import java.io.File;
 
 public class SparkWebsiteHandler {
 
@@ -17,6 +14,10 @@ public class SparkWebsiteHandler {
 
     private void setupVerifyEmailPostRequest(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
         Spark.port(80);
+        //System.out.println(System.getProperty("user.dir") + File.separator + "public");
+        //Spark.externalStaticFileLocation(System.getProperty("user.dir") + File.separator + "public");
+
+        Spark.staticFileLocation("/public");
 
         Spark.path("/account", () -> {
 
@@ -31,8 +32,6 @@ public class SparkWebsiteHandler {
 
             Spark.post("/reset", new ResetPasswordRoute(gameDatabase, authenticationDatabase));
         });
-
-        Spark.exception(Exception.class, (ex, req, res) -> ex.printStackTrace());
     }
 
     public void shutdown() {

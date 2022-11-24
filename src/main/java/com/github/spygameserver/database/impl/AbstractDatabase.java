@@ -7,7 +7,7 @@ import com.github.spygameserver.database.table.AbstractTable;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public abstract class AbstractDatabase {
+public abstract class AbstractDatabase implements AutoCloseable {
 
     protected final DatabaseConnectionManager databaseConnectionManager;
     protected final boolean useTestTables;
@@ -55,6 +55,11 @@ public abstract class AbstractDatabase {
 
         // Now that we've thrown an exception, this is no longer unchecked
         return getUncheckedConnectionHandler(shouldCloseConnectionAfterUsed);
+    }
+
+    @Override
+    public void close() {
+        databaseConnectionManager.close();
     }
 
 }

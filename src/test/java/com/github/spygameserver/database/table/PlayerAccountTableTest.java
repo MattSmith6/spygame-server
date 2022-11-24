@@ -24,12 +24,13 @@ public class PlayerAccountTableTest implements DatabaseRequiredTest {
     private static final String TEST_INVALID_EMAIL = "phil@my.csun.edu";
     private static final String TEST_INVALID_USERNAME = "philly_cheesesteak";
 
+    private GameDatabase gameDatabase;
     private PlayerAccountTable playerAccountTable;
     private ConnectionHandler connectionHandler;
 
     @BeforeAll
     public void setupConnection() {
-        GameDatabase gameDatabase = getGameDatabase();
+        gameDatabase = getGameDatabase();
 
         playerAccountTable = gameDatabase.getPlayerAccountTable();
         connectionHandler = gameDatabase.getNewConnectionHandler(false);
@@ -123,6 +124,7 @@ public class PlayerAccountTableTest implements DatabaseRequiredTest {
     @AfterAll
     @Override
     public void closeOpenConnections() {
+        closeOpenConnections(gameDatabase);
         closeOpenConnections(connectionHandler);
     }
 

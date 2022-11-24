@@ -229,7 +229,7 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
     @AfterAll
     @Override
     public void closeOpenConnections() {
-        // empty
+        closeOpenConnections(gameDatabase, authenticationDatabase);
     }
 
     private class ClientKeyExchange {

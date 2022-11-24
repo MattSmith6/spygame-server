@@ -23,14 +23,7 @@ import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.hc.core5.net.URIBuilder;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -56,6 +49,7 @@ import java.util.function.Consumer;
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Disabled
 public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
 
     private static final String RECOVER_USERNAME_PATH = "account/username/get";
@@ -353,6 +347,7 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
     @AfterAll
     @Override
     public void closeOpenConnections() {
+        closeOpenConnections(gameDatabase, authenticationDatabase);
         sparkWebsiteHandler.shutdown();
     }
 
