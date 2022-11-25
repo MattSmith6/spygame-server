@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Random;
 
 import netscape.javascript.JSObject;
@@ -19,7 +20,7 @@ public class GameLobbyTable extends AbstractTable {
 
     private static final String NON_TESTING_TABLE_NAME = "game_lobby";
 
-    private static final String CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS %s (game_id INT NOT NULL" +
+    private static final String CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS %s (game_id INT NOT NULL " +
             "AUTO_INCREMENT, invite_code CHAR(6), is_public INT, game_type INT, max_players INT, game_name " +
             "CHAR(20), current_players INT, start_time BIGINT, end_time BIGINT, PRIMARY KEY (game_id)," +
             " UNIQUE (invite_code))";
@@ -118,8 +119,10 @@ public class GameLobbyTable extends AbstractTable {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 // If there is a result, then this property does exist
                 if(resultSet.next()) {
-                    gameId = resultSet.getInt(1);
-                    startTime = resultSet.getLong(2);
+                    if(resultSet.getInt(1) != 0)    //There must be some better way to do this
+                        gameId = resultSet.getInt(1);
+                    if(resultSet.getLong(2) != 0)
+                        startTime = resultSet.getLong(2);
                 }
             }
         } catch (SQLException ex) {
@@ -142,8 +145,8 @@ public class GameLobbyTable extends AbstractTable {
             preparedStatement.setInt(2, is_public);
             preparedStatement.setInt(3, game_type);
             preparedStatement.setInt(4, max_players);
-            preparedStatement.setString(4, gameName);
-            preparedStatement.setInt(5, 0);
+            preparedStatement.setString(5, gameName);
+            preparedStatement.setInt(6, 0);
 
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
@@ -176,12 +179,13 @@ public class GameLobbyTable extends AbstractTable {
         return currentPlayers;
     }
 
-    public void updateCurrentPlayers(ConnectionHandler connectionHandler, int current_players) {
+    public void updateCurrentPlayers(ConnectionHandler connectionHandler, int current_players, int gameID) {
         Connection connection = connectionHandler.getConnection();
         String updateUsernameQuery = formatQuery(UPDATE_CURRENT_PLAYERS_QUERY);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameQuery)) {
             preparedStatement.setInt(1, current_players);
+            preparedStatement.setInt(2, gameID);
 
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {

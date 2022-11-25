@@ -16,15 +16,13 @@ import java.io.File;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class PlayerGameInfoTableTest implements DatabaseRequiredTest {
 
+    private GameDatabase gameDatabase;
     private PlayerGameInfoTable playerGameInfoTable;
     private ConnectionHandler connectionHandler;
 
     @BeforeAll
     public void setupConnection() {
-        File credentials = getValidCredentialsFile();
-
-        DatabaseCreator<GameDatabase> databaseCreator = new DatabaseCreator<>(credentials, "game_db", true);
-        GameDatabase gameDatabase = databaseCreator.createDatabaseFromFile(GameDatabase::new);
+        gameDatabase = getGameDatabase();
 
         playerGameInfoTable = gameDatabase.getPlayerGameInfoTable();
         connectionHandler = gameDatabase.getNewConnectionHandler(false);
@@ -44,7 +42,7 @@ public class PlayerGameInfoTableTest implements DatabaseRequiredTest {
         playerGameInfoTable.createTableIfNotExists(connectionHandler);
         playerGameInfoTable.createPlayer(connectionHandler, playerID);
         playerIDTest = playerGameInfoTable.getCurrentNumber(connectionHandler, "player_id", playerID);
-
+        System.out.println("ID = " + playerIDTest);
         Assertions.assertTrue(playerIDTest == playerID);
 
         playerGameInfoTable.updateNumber(connectionHandler, "current_game_id", currentGame, playerID);
@@ -57,6 +55,7 @@ public class PlayerGameInfoTableTest implements DatabaseRequiredTest {
     @Override
     public void closeOpenConnections() {
         closeOpenConnections(connectionHandler);
+        closeOpenConnections(gameDatabase);
     }
 
 }

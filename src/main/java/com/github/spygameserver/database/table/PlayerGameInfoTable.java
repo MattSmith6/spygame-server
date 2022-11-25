@@ -16,10 +16,12 @@ public class PlayerGameInfoTable extends AbstractTable {
 
     private static final String NON_TESTING_TABLE_NAME = "player_game_info";
 
-    private static final String CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS %s (player_id INT NOT NULL, " +
+    private static final String CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS %s (record_id INT NOT NULL " +
+            "AUTO_INCREMENT, player_id INT NOT NULL, " +
             "current_game_id INT, games_won INT, games_played INT, points_earned INT, eliminations_won INT, " +
-            "eliminations_failed INT, eliminations_total INT, FOREIGN KEY (player_id), " +
-            "FOREIGN KEY (current_game_id)";
+            "eliminations_failed INT, eliminations_total INT, PRIMARY KEY (record_id), FOREIGN KEY (player_id)" +
+            " REFERENCES player_account(player_id), " +
+            "FOREIGN KEY (current_game_id) REFERENCES game_lobby(current_game_id))";
 
     private static final String GET_CURRENT_NUMBER = "SELECT ? FROM %s WHERE player_id = ?";
 

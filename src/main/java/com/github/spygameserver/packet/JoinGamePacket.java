@@ -49,7 +49,7 @@ public class JoinGamePacket extends AbstractPacket {
 
             if (canJoinGame) {
                 currentPlayers = gameLobbyTable.getCurrentPlayers(connectionHandler, gameStuff.getL()) + 1;
-                gameLobbyTable.updateCurrentPlayers(connectionHandler, currentPlayers);
+                gameLobbyTable.updateCurrentPlayers(connectionHandler, currentPlayers, gameStuff.getL());
 
                 //put the player id in the game
                 //int playerID = playerEncryptionKey.getPlayerId();
