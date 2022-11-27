@@ -4,6 +4,7 @@ import com.github.spygameserver.auth.PlayerEncryptionKey;
 import com.github.spygameserver.database.ConnectionHandler;
 import com.github.spygameserver.database.impl.GameDatabase;
 import com.github.spygameserver.database.table.GameLobbyTable;
+import com.github.spygameserver.database.table.PlayerGameInfoTable;
 import com.github.spygameserver.packet.AbstractPacket;
 import com.github.spygameserver.packet.PacketManager;
 import org.json.JSONObject;
@@ -19,6 +20,7 @@ public class JoinGamePacket extends AbstractPacket {
 
     boolean canJoinGame = true;
     int currentPlayers;
+    int playerID;
     String code;
     GameLobbyTable.Pair<Integer, Long> gameStuff = null;
 
@@ -37,6 +39,9 @@ public class JoinGamePacket extends AbstractPacket {
 
             GameDatabase gameDatabase = packetManager.getGameDatabase();
             GameLobbyTable gameLobbyTable = gameDatabase.getGameLobbyTable();
+            PlayerGameInfoTable playerGameInfoTable = gameDatabase.getPlayerGameInfoTable();
+
+            playerID = playerEncryptionKey.getPlayerId();
 
             ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(false);
 
@@ -52,7 +57,7 @@ public class JoinGamePacket extends AbstractPacket {
                 gameLobbyTable.updateCurrentPlayers(connectionHandler, currentPlayers, gameStuff.getL());
 
                 //put the player id in the game
-                //int playerID = playerEncryptionKey.getPlayerId();
+                playerGameInfoTable.updateNumber(connectionHandler, "current_game_id", gameStuff.getL(), playerID);
             }
 
             connectionHandler.setShouldCloseConnectionAfterUse(true);

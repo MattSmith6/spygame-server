@@ -46,7 +46,7 @@ public class GameLobbyTableTest implements DatabaseRequiredTest {
         GameLobbyTable.Pair<Integer, Long> gameStuff = gameLobbyTable.getGameIdFromInviteCode(connectionHandler, inviteCode);
 
         Assertions.assertTrue(gameStuff.getR() == null);
-        Assertions.assertTrue(gameLobbyTable.getCurrentPlayers(connectionHandler, gameStuff.getL()) == 0);
+        Assertions.assertEquals(gameLobbyTable.getCurrentPlayers(connectionHandler, gameStuff.getL()), 0);
 
         gameLobbyTable.updateCurrentPlayers(connectionHandler, 5, gameStuff.getL());
 

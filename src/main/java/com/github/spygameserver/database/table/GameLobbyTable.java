@@ -31,6 +31,7 @@ public class GameLobbyTable extends AbstractTable {
             "max_players, game_name, current_players) VALUES (?, ?, ?, ?, ?, ?)";
 
     private static final String GET_CURRENT_PLAYERS_QUERY = "SELECT current_players FROM %s WHERE game_id=?";
+    private static final String GET_MAX_PLAYERS_QUERY = "SELECT max_players FROM %s WHERE game_id=?";
     private static final String UPDATE_CURRENT_PLAYERS_QUERY = "UPDATE %s SET current_players=? WHERE game_id=?";
     private static final String UPDATE_START_TIME = "UPDATE %s SET start_time=? WHERE game_id=?";
     private static final String UPDATE_END_TIME = "UPDATE %s SET end_time=? WHERE game_id=?";
@@ -49,8 +50,7 @@ public class GameLobbyTable extends AbstractTable {
     @Override
     protected void createTableIfNotExists(ConnectionHandler connectionHandler) {
         Connection connection = connectionHandler.getConnection();
-        String createTableQuery = String.format(CREATE_TABLE_QUERY, getTableName(),
-                AccountVerificationStatus.toSQLStringifiedEnum());
+        String createTableQuery = formatQuery(CREATE_TABLE_QUERY);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(createTableQuery)) {
             preparedStatement.execute();
@@ -179,18 +179,46 @@ public class GameLobbyTable extends AbstractTable {
         return currentPlayers;
     }
 
-    public void updateCurrentPlayers(ConnectionHandler connectionHandler, int current_players, int gameID) {
+    public void checkToStartGame(ConnectionHandler connectionHandler, int currentPlayers, int gameID) {
+        Connection connection = connectionHandler.getConnection();
+        String selectOneQuery = formatQuery(GET_MAX_PLAYERS_QUERY);
+
+        int maxPlayers = -1;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectOneQuery)) {
+            preparedStatement.setInt(1, gameID);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                // If there is a result, then this property does exist
+                if (resultSet.next()) {
+                    maxPlayers = resultSet.getInt(1);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        if(maxPlayers == currentPlayers) {
+            updateStartTime(connectionHandler);
+        }
+
+        connectionHandler.closeConnectionIfNecessary();
+    }
+
+    public void updateCurrentPlayers(ConnectionHandler connectionHandler, int currentPlayers, int gameID) {
         Connection connection = connectionHandler.getConnection();
         String updateUsernameQuery = formatQuery(UPDATE_CURRENT_PLAYERS_QUERY);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameQuery)) {
-            preparedStatement.setInt(1, current_players);
+            preparedStatement.setInt(1, currentPlayers);
             preparedStatement.setInt(2, gameID);
 
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+
+        checkToStartGame(connectionHandler, currentPlayers, gameID);
 
         connectionHandler.closeConnectionIfNecessary();
     }
