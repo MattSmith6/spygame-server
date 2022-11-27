@@ -16,8 +16,9 @@ public class VerificationTokenTable extends AbstractTable {
 	private static final String CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS %s (id INT NOT NULL AUTO_INCREMENT, " +
 			"player_id INT NOT NULL, verification_token CHAR(%s) NOT NULL, PRIMARY KEY (id), UNIQUE (verification_token))";
 
-	private static final String INSERT_INTO_QUERY = "INSERT INTO %s VALUES (?, ?)";
+	private static final String INSERT_INTO_QUERY = "INSERT INTO %s (player_id, verification_token) VALUES (?, ?)";
 	private static final String GET_PLAYER_ID_FROM_TOKEN_QUERY = "SELECT player_id FROM %s WHERE verification_token=?";
+	private static final String GET_TOKEN_FROM_PLAYER_ID_QUERY = "SELECT verification_token FROM %s WHERE player_id=?";
 
 	private static final String DELETE_TOKEN_QUERY = "DELETE FROM %s WHERE verification_token=?";
 
@@ -112,6 +113,28 @@ public class VerificationTokenTable extends AbstractTable {
 		}
 
 		return playerId;
+	}
+
+	public String getVerificationTokenFromPlayerId(ConnectionHandler connectionHandler, int playerId) {
+		Connection connection = connectionHandler.getConnection();
+		String getTokenFromPlayerIdQuery = formatQuery(GET_TOKEN_FROM_PLAYER_ID_QUERY);
+
+		String token = null;
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(getTokenFromPlayerIdQuery)) {
+			preparedStatement.setInt(1, playerId);
+
+			ResultSet resultSet = preparedStatement.executeQuery();
+
+			if (resultSet.next()) {
+				token = resultSet.getString(1);
+			}
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		}
+
+		connectionHandler.closeConnectionIfNecessary();
+		return token;
 	}
 
 	public void deleteVerificationToken(ConnectionHandler connectionHandler, String verificationToken) {
