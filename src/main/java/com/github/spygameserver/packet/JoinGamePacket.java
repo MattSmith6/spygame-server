@@ -57,7 +57,7 @@ public class JoinGamePacket extends AbstractPacket {
                 gameLobbyTable.updateCurrentPlayers(connectionHandler, currentPlayers, gameStuff.getL());
 
                 //put the player id in the game
-                playerGameInfoTable.updateNumber(connectionHandler, "current_game_id", gameStuff.getL(), playerID);
+                playerGameInfoTable.updateCurrentGameId(connectionHandler, gameStuff.getL(), playerID);
             }
 
             connectionHandler.setShouldCloseConnectionAfterUse(true);

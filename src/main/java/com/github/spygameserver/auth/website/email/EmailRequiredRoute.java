@@ -1,4 +1,4 @@
-package com.github.spygameserver.auth.website;
+package com.github.spygameserver.auth.website.email;
 
 import org.json.JSONObject;
 import spark.Request;
@@ -8,7 +8,7 @@ import spark.Route;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
-public abstract class VerificationRoute implements Route {
+public abstract class EmailRequiredRoute implements Route {
 
     private final String STATUS_FIELD = "status";
 
@@ -17,11 +17,11 @@ public abstract class VerificationRoute implements Route {
         response.type("application/json");
         JSONObject jsonObject = parseRequestIntoJSON(request.body());
 
-        if (!GoogleEmailVerifier.isCSUNEmailVerified(jsonObject)) {
+        if (!EmailVerifier.isEmailFromCSUN(jsonObject)) {
             return getErrorObject("Unable to verify your CSUN email.");
         }
 
-        return handleAdditional(jsonObject, response).toString();
+        return handleAdditional(jsonObject, getEmail(jsonObject), response);
     }
 
     private JSONObject parseRequestIntoJSON(String body) {
@@ -39,7 +39,7 @@ public abstract class VerificationRoute implements Route {
         return jsonObject;
     }
 
-    public abstract JSONObject handleAdditional(JSONObject jsonObject, Response response);
+    public abstract JSONObject handleAdditional(JSONObject jsonObject, String email, Response response);
 
     protected String getEmail(JSONObject jsonObject) {
         return jsonObject.getString("email");

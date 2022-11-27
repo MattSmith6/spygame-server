@@ -6,6 +6,7 @@ import com.zaxxer.hikari.HikariConfig;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Class to create a database given the appropriate credentials property file.
@@ -22,7 +23,7 @@ public class DatabaseCreator<T extends AbstractDatabase> {
         this.useTestTables = useTestTables;
     }
 
-    public T createDatabase(BiFunction<DatabaseConnectionManager, Boolean, T> databaseConstructor) {
+    public T createDatabase(Function<DatabaseConnectionManager, T> databaseConstructor) {
         HikariConfig hikariConfig = new HikariConfig(databaseType.getHikariProperties());
         hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
@@ -34,7 +35,7 @@ public class DatabaseCreator<T extends AbstractDatabase> {
             throw new IllegalArgumentException(ex);
         }
 
-        return databaseConstructor.apply(databaseConnectionManager, useTestTables);
+        return databaseConstructor.apply(databaseConnectionManager);
     }
 
 }

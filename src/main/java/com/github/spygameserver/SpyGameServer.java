@@ -5,6 +5,7 @@ import com.github.spygameserver.database.DatabaseCreator;
 import com.github.spygameserver.database.DatabaseType;
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.impl.GameDatabase;
+import com.github.spygameserver.database.table.TableType;
 import com.github.spygameserver.util.ExceptionHandling;
 
 import java.util.Scanner;
@@ -12,6 +13,9 @@ import java.util.Scanner;
 public class SpyGameServer {
 
     public static void main(String[] args) {
+        // Use production tables, not the testing tables
+        TableType.setUseTestTables(false);
+
         DatabaseCreator<GameDatabase> gameDatabaseCreator = new DatabaseCreator<>(DatabaseType.GAME, false);
         GameDatabase gameDatabase = gameDatabaseCreator.createDatabase(GameDatabase::new);
 

@@ -15,7 +15,7 @@ import java.sql.SQLException;
 
 public class AuthenticationTable extends AbstractTable {
 
-    private static final String NON_TESTING_TABLE_NAME = "player_authentication";
+    private static final TableType TABLE_TYPE = TableType.PLAYER_AUTHENTICATION;
 
     private static final String CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS %s (player_id INT NOT NULL, " +
             "salt BINARY(32) NOT NULL, verifier BINARY(128) NOT NULL, PRIMARY KEY (player_id))";
@@ -24,8 +24,8 @@ public class AuthenticationTable extends AbstractTable {
     private static final String UPDATE_QUERY = "UPDATE %s SET salt=?, verifier=? WHERE player_id=?";
     private static final String SELECT_QUERY = "SELECT salt, verifier FROM %s WHERE player_id=?";
 
-    public AuthenticationTable(boolean useTestTables) {
-        super(NON_TESTING_TABLE_NAME, useTestTables);
+    public AuthenticationTable() {
+        super(TABLE_TYPE);
     }
 
     @Override

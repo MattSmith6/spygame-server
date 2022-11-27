@@ -8,7 +8,7 @@ public class AccountVerificationStatusTest {
     @Test
     public void testSQLStringifiedEnum() {
         String realValue = AccountVerificationStatus.toSQLStringifiedEnum();
-        String expectedValue = "('CHOOSE_USERNAME', 'VERIFIED')";
+        String expectedValue = "('AWAITING_VERIFICATION', 'DISABLED', 'VERIFIED')";
 
         Assertions.assertEquals(expectedValue, realValue);
     }

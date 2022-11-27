@@ -2,7 +2,8 @@ package com.github.spygameserver.player.account;
 
 public enum AccountVerificationStatus {
 
-    CHOOSE_USERNAME,
+    AWAITING_VERIFICATION,
+    DISABLED,
     VERIFIED;
 
     public static String toSQLStringifiedEnum() {

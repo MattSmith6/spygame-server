@@ -10,13 +10,11 @@ import java.sql.SQLException;
 public abstract class AbstractDatabase implements AutoCloseable {
 
     protected final DatabaseConnectionManager databaseConnectionManager;
-    protected final boolean useTestTables;
 
     private boolean isInitialized = false;
 
-    protected AbstractDatabase(DatabaseConnectionManager databaseConnectionManager, boolean useTestTables) {
+    protected AbstractDatabase(DatabaseConnectionManager databaseConnectionManager) {
         this.databaseConnectionManager = databaseConnectionManager;
-        this.useTestTables = useTestTables;
     }
 
     // Initialize all tables by creating them, if necessary

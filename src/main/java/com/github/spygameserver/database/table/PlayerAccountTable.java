@@ -9,20 +9,24 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class PlayerAccountTable extends AbstractTable {
 
-    private static final String NON_TESTING_TABLE_NAME = "player_account";
+    private static final TableType TABLE_TYPE = TableType.PLAYER_ACCOUNT;
 
     private static final String CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS %s (player_id INT NOT NULL" +
             " AUTO_INCREMENT, email VARCHAR(60) NOT NULL, username VARCHAR(16), verification_status ENUM %s" +
-            " NOT NULL, PRIMARY KEY (player_id), UNIQUE (email))";
+            " NOT NULL, PRIMARY KEY (player_id), UNIQUE (email), UNIQUE (username))";
 
     private static final String DOES_USERNAME_EXIST_QUERY = "SELECT 1 FROM %s WHERE username=?";
     private static final String DOES_EMAIL_EXIST_QUERY = "SELECT 1 FROM %s WHERE email=?";
 
-    private static final String INSERT_INTO_QUERY = "INSERT INTO %s (email, verification_status) VALUES (?, ?)";
-    private static final String UPDATE_USERNAME_QUERY = "UPDATE %s SET username=?, verification_status=? WHERE email=?";
+    private static final String INSERT_INTO_QUERY = "INSERT INTO %s (email, username, verification_status) VALUES " +
+            "(?, ?, ?)";
+    private static final String UPDATE_DISABLED_ACCOUNT = "UPDATE %s SET username=?, verification_status=? WHERE player_id=?";
+
+    private static final String UPDATE_VERIFICATION_STATUS_QUERY = "UPDATE %s SET verification_status=? WHERE player_id=?";
 
     private static final String PLAYER_ACCOUNT_DATA_BY_ID_QUERY = "SELECT * FROM %s WHERE player_id=?";
     private static final String PLAYER_ACCOUNT_DATA_BY_EMAIL_QUERY = "SELECT * FROM %s WHERE email=?";
@@ -32,8 +36,8 @@ public class PlayerAccountTable extends AbstractTable {
     private static final String PLAYER_VERIFICATION_DATA_QUERY = "SELECT player_id, verification_status FROM %s" +
             " WHERE username=?";
 
-    public PlayerAccountTable(boolean useTestTables) {
-        super(NON_TESTING_TABLE_NAME, useTestTables);
+    public PlayerAccountTable() {
+        super(TABLE_TYPE);
     }
 
     @Override
@@ -81,13 +85,39 @@ public class PlayerAccountTable extends AbstractTable {
     }
 
     // Sets the player's account with no username, the user should select a username and password for next step
-    public void addVerifiedEmail(ConnectionHandler connectionHandler, String email) {
+    public int createPlayerAccount(ConnectionHandler connectionHandler, String email, String username) {
         Connection connection = connectionHandler.getConnection();
         String insertIntoQuery = formatQuery(INSERT_INTO_QUERY);
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(insertIntoQuery)) {
+        int playerId = -1;
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertIntoQuery, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, email);
-            preparedStatement.setString(2, AccountVerificationStatus.CHOOSE_USERNAME.name());
+            preparedStatement.setString(2, username);
+            preparedStatement.setString(3, AccountVerificationStatus.AWAITING_VERIFICATION.name());
+
+            preparedStatement.executeUpdate();
+
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+            if (resultSet.next()) {
+                playerId = resultSet.getInt(1);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        connectionHandler.closeConnectionIfNecessary();
+        return playerId;
+    }
+
+    public void setUpdateDisabledAccount(ConnectionHandler connectionHandler, String username, int playerId) {
+        Connection connection = connectionHandler.getConnection();
+        String updateDisabledAccountQuery = formatQuery(UPDATE_DISABLED_ACCOUNT);
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(updateDisabledAccountQuery)) {
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, AccountVerificationStatus.AWAITING_VERIFICATION.name());
+            preparedStatement.setInt(3, playerId);
 
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
@@ -97,15 +127,14 @@ public class PlayerAccountTable extends AbstractTable {
         connectionHandler.closeConnectionIfNecessary();
     }
 
-    // Sets the player's username associated with their email, authentication information is generated at this step also
-    public void addUsernameToPlayerAccount(ConnectionHandler connectionHandler, String email, String username) {
+    public void updatePlayerVerificationStatus(ConnectionHandler connectionHandler,
+                                               AccountVerificationStatus accountVerificationStatus, int playerId) {
         Connection connection = connectionHandler.getConnection();
-        String updateUsernameQuery = formatQuery(UPDATE_USERNAME_QUERY);
+        String updateVerificationStatusQuery = formatQuery(UPDATE_VERIFICATION_STATUS_QUERY);
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameQuery)) {
-            preparedStatement.setString(1, username);
-            preparedStatement.setString(2, AccountVerificationStatus.VERIFIED.name());
-            preparedStatement.setString(3, email);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(updateVerificationStatusQuery)) {
+            preparedStatement.setString(1, accountVerificationStatus.name());
+            preparedStatement.setInt(2, playerId);
 
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
@@ -136,20 +165,17 @@ public class PlayerAccountTable extends AbstractTable {
             sqlStatementConsumer.consume(preparedStatement);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                // If no record exists, we should return a null object
-                if (!resultSet.next()) {
-                    return null;
+                if (resultSet.next()) {
+                    int playerId = resultSet.getInt(1);
+                    String email = resultSet.getString(2);
+                    String username = resultSet.getString(3);
+
+                    String nameOfAccountVerificationStatus = resultSet.getString(4);
+                    AccountVerificationStatus accountVerificationStatus = AccountVerificationStatus
+                            .valueOf(nameOfAccountVerificationStatus);
+
+                    playerAccountData = new PlayerAccountData(playerId, email, username, accountVerificationStatus);
                 }
-
-                int playerId = resultSet.getInt(1);
-                String email = resultSet.getString(2);
-                String username = resultSet.getString(3);
-
-                String nameOfAccountVerificationStatus = resultSet.getString(4);
-                AccountVerificationStatus accountVerificationStatus = AccountVerificationStatus
-                        .valueOf(nameOfAccountVerificationStatus);
-
-                playerAccountData = new PlayerAccountData(playerId, email, username, accountVerificationStatus);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

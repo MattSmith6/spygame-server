@@ -85,12 +85,7 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
 
         sparkWebsiteHandler = new SparkWebsiteHandler(gameDatabase, authenticationDatabase);
 
-        // Remove all data that should be unique so no testing errors occur
-        playerAccountTable.dropTableSecure(gameConnectionHandler);
         playerAccountTable.initialize(gameConnectionHandler);
-
-
-        authenticationTable.dropTableSecure(authConnectionHandler);
         authenticationTable.initialize(authConnectionHandler);
 
         gameConnectionHandler.closeAbsolutely();
@@ -130,7 +125,7 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
 
         PlayerAccountData realData = playerAccountTable.getPlayerAccountDataByEmail(getGameConnectionHandler(), VALID_EMAIL);
         PlayerAccountData expectedData = new PlayerAccountData(realData.getPlayerId(), VALID_EMAIL, null,
-                AccountVerificationStatus.CHOOSE_USERNAME);
+                AccountVerificationStatus.AWAITING_VERIFICATION);
 
         Assertions.assertEquals(expectedData, realData);
     }

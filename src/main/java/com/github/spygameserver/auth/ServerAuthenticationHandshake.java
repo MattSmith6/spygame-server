@@ -83,14 +83,17 @@ public class ServerAuthenticationHandshake {
     }
 
     private void putSRP6Variable(JSONObject jsonObject, String path, SRP6IntegerVariable srp6IntegerVariable) {
-        jsonObject.put(path, srp6IntegerVariable.bytes(BYTE_ORDER).asArray());
+        putSRP6Variable(jsonObject, path, srp6IntegerVariable.bytes(BYTE_ORDER));
+    }
+
+    private void putSRP6Variable(JSONObject jsonObject, String path, Bytes bytes) {
+        jsonObject.put(path, Base64.getEncoder().encodeToString(bytes.asArray()));
     }
 
     public JSONObject respondToHello(int playerId) {
         JSONObject responseToHello = new JSONObject();
 
-        PlayerAuthenticationData playerAuthenticationData = authenticationTable
-                .getPlayerAuthenticationRecord(connectionHandler, playerId);
+        PlayerAuthenticationData playerAuthenticationData = authenticationTable.getPlayerAuthenticationRecord(connectionHandler, playerId);
 
         if (playerAuthenticationData == null) {
             responseToHello.put("error", "bad_record_mac");
@@ -111,10 +114,10 @@ public class ServerAuthenticationHandshake {
             B = new SRP6ServerPublicKey(N, g, k, v, b);
 
             // Server should respond with N, g, s, and B in the JSONObject
-            responseToHello.put("N", Base64.getEncoder().encodeToString(N.bytes(BYTE_ORDER).asArray()));
-            responseToHello.put("g", Base64.getEncoder().encodeToString(g.bytes(BYTE_ORDER).asArray()));
-            responseToHello.put("s", Base64.getEncoder().encodeToString(s.asArray()));
-            responseToHello.put("B", Base64.getEncoder().encodeToString(B.bytes(BYTE_ORDER).asArray()));
+            putSRP6Variable(responseToHello, "N", N);
+            putSRP6Variable(responseToHello, "g", g);
+            putSRP6Variable(responseToHello, "s", s);
+            putSRP6Variable(responseToHello, "B", B);
         } catch (SRP6Exception ex) {
             responseToHello.put("error", "bad_record_mac");
         }
@@ -138,7 +141,7 @@ public class ServerAuthenticationHandshake {
             M2 = new SRP6ServerSessionProof(IMD, N, A, sM1, K, BYTE_ORDER);
 
             // Server should send M2
-            jsonObject.put("M2", Base64.getEncoder().encodeToString(M2.asArray()));
+            putSRP6Variable(jsonObject, "M2", M2);
         } catch (SRP6Exception ex) {
             jsonObject.put("error", "Client proof mismatch!");
         }

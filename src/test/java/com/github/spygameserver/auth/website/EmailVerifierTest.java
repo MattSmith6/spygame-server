@@ -1,9 +1,10 @@
 package com.github.spygameserver.auth.website;
 
+import com.github.spygameserver.auth.website.email.EmailVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class GoogleEmailVerifierTest {
+public class EmailVerifierTest {
 
     private static final String INVALID_EMAIL = "bob@gmail.com";
     private static final String VALID_EMAIL_1 = "bob@my.csun.edu";
@@ -11,13 +12,13 @@ public class GoogleEmailVerifierTest {
 
     @Test
     public void testValidEmailAddresses() {
-        Assertions.assertTrue(GoogleEmailVerifier.isEmailFromCSUN(VALID_EMAIL_1));
-        Assertions.assertTrue(GoogleEmailVerifier.isEmailFromCSUN(VALID_EMAIL_2));
+        Assertions.assertTrue(EmailVerifier.isEmailFromCSUN(VALID_EMAIL_1));
+        Assertions.assertTrue(EmailVerifier.isEmailFromCSUN(VALID_EMAIL_2));
     }
 
     @Test
     public void testInvalidEmailAddresses() {
-        Assertions.assertFalse(GoogleEmailVerifier.isEmailFromCSUN(INVALID_EMAIL));
+        Assertions.assertFalse(EmailVerifier.isEmailFromCSUN(INVALID_EMAIL));
     }
 
 }

@@ -34,8 +34,6 @@ public class AuthenticationTableTest implements DatabaseRequiredTest {
         authenticationTable = authenticationDatabase.getAuthenticationTable();
         connectionHandler = authenticationDatabase.getNewConnectionHandler(false);
 
-        // Clear the database test table so that we can test without any interfering records
-        authenticationTable.dropTableSecure(connectionHandler);
         authenticationTable.initialize(connectionHandler);
     }
 
@@ -46,15 +44,20 @@ public class AuthenticationTableTest implements DatabaseRequiredTest {
     }
 
     private void createAndVerifyAuthenticationData() {
-        PlayerAuthenticationData addedPlayerAuthenticationData = new PlayerAuthenticationData(TEST_PLAYER_ID,
+        PlayerAuthenticationData fetchedData = authenticationTable.getPlayerAuthenticationRecord(connectionHandler, TEST_PLAYER_ID);
+        PlayerAuthenticationData testInsertData = new PlayerAuthenticationData(TEST_PLAYER_ID,
                 getExampleSalt('A'), getExampleVerifier('B'));
-        authenticationTable.addPlayerAuthenticationRecord(connectionHandler, addedPlayerAuthenticationData);
 
+        if (fetchedData == null) {
+            authenticationTable.addPlayerAuthenticationRecord(connectionHandler, testInsertData);
+        } else {
+            authenticationTable.updatePlayerAuthenticationRecord(connectionHandler, testInsertData);
+        }
 
         PlayerAuthenticationData retrievedPlayerAuthenticationData = authenticationTable
                 .getPlayerAuthenticationRecord(connectionHandler, TEST_PLAYER_ID);
 
-        Assertions.assertEquals(addedPlayerAuthenticationData, retrievedPlayerAuthenticationData,
+        Assertions.assertEquals(testInsertData, retrievedPlayerAuthenticationData,
                 "Data inserted into the database does not match data retrieved from the database.");
     }
 

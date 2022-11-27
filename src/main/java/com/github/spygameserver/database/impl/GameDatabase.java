@@ -14,12 +14,12 @@ public class GameDatabase extends AbstractDatabase {
     private final GameLobbyTable gameLobbyTable;
     private final PlayerGameInfoTable playerGameInfoTable;
 
-    public GameDatabase(DatabaseConnectionManager databaseConnectionManager, boolean useTestTables) {
-        super(databaseConnectionManager, useTestTables);
+    public GameDatabase(DatabaseConnectionManager databaseConnectionManager) {
+        super(databaseConnectionManager);
 
-        this.playerAccountTable = new PlayerAccountTable(useTestTables);
-        this.gameLobbyTable = new GameLobbyTable(useTestTables);
-        this.playerGameInfoTable = new PlayerGameInfoTable(useTestTables);
+        this.playerAccountTable = new PlayerAccountTable();
+        this.gameLobbyTable = new GameLobbyTable();
+        this.playerGameInfoTable = new PlayerGameInfoTable();
 
         initialize(playerAccountTable, gameLobbyTable, playerGameInfoTable);
     }

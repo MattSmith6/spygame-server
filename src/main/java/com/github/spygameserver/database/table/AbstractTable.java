@@ -4,22 +4,19 @@ import com.github.spygameserver.database.ConnectionHandler;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public abstract class AbstractTable {
 
-    private static final String CHECK_IF_EMPTY_QUERY = "SELECT 1 FROM %s LIMIT 1";
-    private static final String DELETE_ALL_QUERY = "DELETE FROM %s";
+    private static final String SET_FOREIGN_KEY_CHECK_QUERY = "SET foreign_key_checks=?";
 
-    private static final String TESTING_TABLE_PREFIX = "test_";
+    private static final int KEY_CHECKS_ENABLED = 1;
+    private static final int KEY_CHECKS_DISABLED = 0;
 
     private final String tableName;
-    private final boolean useTestTables;
 
-    protected AbstractTable(String nonTestingTableName, boolean useTestTables) {
-        this.tableName = useTestTables ? TESTING_TABLE_PREFIX + nonTestingTableName : nonTestingTableName;
-        this.useTestTables = useTestTables;
+    protected AbstractTable(TableType tableType) {
+        this.tableName = tableType.getTableName();
     }
 
     public void initialize(ConnectionHandler connectionHandler) {
@@ -32,22 +29,6 @@ public abstract class AbstractTable {
      */
     protected abstract void createTableIfNotExists(ConnectionHandler connectionHandler);
 
-    // Drop the table only if test table is being used, will not drop a production table
-    public void dropTableSecure(ConnectionHandler connectionHandler) {
-        if (!useTestTables) {
-            throw new IllegalStateException("Cannot securely delete all from table that is not a test table.");
-        }
-
-        Connection connection = connectionHandler.getConnection();
-        String dropTableQuery = formatQuery(DELETE_ALL_QUERY);
-
-        try (PreparedStatement preparedStatement = connection.prepareStatement(dropTableQuery)) {
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-
     protected String getTableName() {
         return this.tableName;
     }
@@ -56,20 +37,25 @@ public abstract class AbstractTable {
         return String.format(queryToFormat, getTableName());
     }
 
-    public boolean isTableEmpty(ConnectionHandler connectionHandler) {
-        Connection connection = connectionHandler.getConnection();
-        String checkIfEmptyQuery = formatQuery(CHECK_IF_EMPTY_QUERY);
+    protected void disableKeyChecks(ConnectionHandler connectionHandler) {
+        setKeyChecks(connectionHandler, KEY_CHECKS_DISABLED);
+    }
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(checkIfEmptyQuery)) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                // If there is no record to go to next, then the table is empty
-                return !resultSet.next();
-            }
+    protected void enableKeyChecks(ConnectionHandler connectionHandler) {
+        setKeyChecks(connectionHandler, KEY_CHECKS_ENABLED);
+    }
+
+    protected void setKeyChecks(ConnectionHandler connectionHandler, int parameter) {
+        Connection connection = connectionHandler.getConnection();
+        String setKeyChecksQuery = formatQuery(SET_FOREIGN_KEY_CHECK_QUERY);
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(setKeyChecksQuery)) {
+            preparedStatement.setInt(1, parameter);
+
+            preparedStatement.execute();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-
-        return false;
     }
 
 }

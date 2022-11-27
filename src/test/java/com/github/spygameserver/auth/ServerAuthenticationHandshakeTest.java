@@ -1,7 +1,6 @@
 package com.github.spygameserver.auth;
 
 import com.github.glusk.caesar.Bytes;
-import com.github.glusk.caesar.Hex;
 import com.github.glusk.caesar.PlainText;
 import com.github.glusk.caesar.hashing.ImmutableMessageDigest;
 import com.github.glusk.srp6_variables.SRP6ClientPublicKey;
@@ -16,10 +15,8 @@ import com.github.glusk.srp6_variables.SRP6RandomEphemeral;
 import com.github.glusk.srp6_variables.SRP6ScramblingParameter;
 import com.github.glusk.srp6_variables.SRP6ServerSessionProof;
 import com.github.glusk.srp6_variables.SRP6SessionKey;
-import com.github.glusk.srp6_variables.SRP6Verifier;
 import com.github.spygameserver.DatabaseRequiredTest;
 import com.github.spygameserver.database.ConnectionHandler;
-import com.github.spygameserver.database.DatabaseCreator;
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.impl.GameDatabase;
 import com.github.spygameserver.database.table.AuthenticationTable;
@@ -32,14 +29,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import java.io.File;
 import java.nio.ByteOrder;
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.logging.Logger;
 
 import static com.github.spygameserver.auth.ServerAuthenticationHandshake.N;
-import static com.github.spygameserver.auth.ServerAuthenticationHandshake.g;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
@@ -60,12 +54,8 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
     public void setupDatabaseConnection() {
         authenticationDatabase = getAuthenticationDatabase();
 
-        ConnectionHandler connectionHandler = authenticationDatabase.getNewConnectionHandler(false);
-
-        authenticationDatabase.getAuthenticationTable().dropTableSecure(connectionHandler);
+        ConnectionHandler connectionHandler = authenticationDatabase.getNewConnectionHandler(true);
         authenticationDatabase.getAuthenticationTable().createTableIfNotExists(connectionHandler);
-
-        connectionHandler.closeAbsolutely();
 
         gameDatabase = getGameDatabase();
 
@@ -78,12 +68,14 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
 
         PlayerAccountData playerAccountData = playerAccountTable.getPlayerAccountDataByEmail(gameConnectionHandler, EMAIL);
 
+        int playerId;
+
         if (playerAccountData == null) {
-            playerAccountTable.addVerifiedEmail(gameConnectionHandler, EMAIL);
-            playerAccountTable.addUsernameToPlayerAccount(gameConnectionHandler, EMAIL, USERNAME);
+            playerId = playerAccountTable.createPlayerAccount(gameConnectionHandler, EMAIL, USERNAME);
+        } else {
+            playerId = playerAccountData.getPlayerId();
         }
 
-        int playerId = playerAccountTable.getPlayerIdByUsername(gameConnectionHandler, USERNAME);
         gameConnectionHandler.closeAbsolutely();
 
         AuthenticationTable authenticationTable = authenticationDatabase.getAuthenticationTable();
@@ -92,6 +84,8 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
         // If the table our data already exists, we don't need to be here
         if (authenticationTable.getPlayerAuthenticationRecord(authConnectionHandler, playerId) != null) {
             authConnectionHandler.closeAbsolutely();
+            realPlayerId = playerId;
+
             return;
         }
 
@@ -119,6 +113,7 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
     public void testInvalidKeyExchangePlayerReceiveHello() {
         ServerAuthenticationHandshake handshake = new ServerAuthenticationHandshake(USERNAME, authenticationDatabase);
         JSONObject responseToPlayerHello = handshake.respondToHello(realPlayerId);
+        System.out.println(realPlayerId);
 
         if (responseToPlayerHello.has("error")) {
             Assertions.fail(getErrorMessage(responseToPlayerHello));

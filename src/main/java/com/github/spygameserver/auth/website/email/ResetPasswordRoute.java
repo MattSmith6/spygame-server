@@ -1,4 +1,4 @@
-package com.github.spygameserver.auth.website;
+package com.github.spygameserver.auth.website.email;
 
 import com.github.spygameserver.auth.PlayerAuthenticationData;
 import com.github.spygameserver.database.ConnectionHandler;
@@ -9,9 +9,7 @@ import com.github.spygameserver.player.account.PlayerAccountData;
 import org.json.JSONObject;
 import spark.Response;
 
-import java.util.Map;
-
-public class ResetPasswordRoute extends VerificationRoute {
+public class ResetPasswordRoute extends EmailRequiredRoute {
 
     private final GameDatabase gameDatabase;
     private final AuthenticationDatabase authenticationDatabase;
@@ -22,9 +20,7 @@ public class ResetPasswordRoute extends VerificationRoute {
     }
 
     @Override
-    public JSONObject handleAdditional(JSONObject jsonObject, Response response) {
-        String email = getEmail(jsonObject);
-
+    public JSONObject handleAdditional(JSONObject jsonObject, String email, Response response) {
         ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
         PlayerAccountData playerAccountData = gameDatabase.getPlayerAccountTable()
                 .getPlayerAccountDataByEmail(connectionHandler, email);

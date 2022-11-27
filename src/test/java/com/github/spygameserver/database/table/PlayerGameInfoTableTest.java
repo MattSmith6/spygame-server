@@ -30,8 +30,6 @@ public class PlayerGameInfoTableTest implements DatabaseRequiredTest {
         gameDatabase.getGameLobbyTable().createTableIfNotExists(connectionHandler);
         gameDatabase.getPlayerAccountTable().createTableIfNotExists(connectionHandler);
 
-        // Make sure no data persists, since these fields need to be unique
-        playerGameInfoTable.dropTableSecure(connectionHandler);
         playerGameInfoTable.initialize(connectionHandler);
     }
 
@@ -42,13 +40,12 @@ public class PlayerGameInfoTableTest implements DatabaseRequiredTest {
         int currentGame = 2;
         int currentGameTest = 0;
 
-        playerGameInfoTable.createTableIfNotExists(connectionHandler);
         playerGameInfoTable.createPlayer(connectionHandler, playerID);
         playerIDTest = playerGameInfoTable.getCurrentNumber(connectionHandler, "player_id", playerID);
 
         Assertions.assertEquals(playerIDTest, playerID);
 
-        playerGameInfoTable.updateNumber(connectionHandler, "current_game_id", currentGame, playerID);
+        playerGameInfoTable.updateCurrentGameId(connectionHandler, currentGame, playerID);
         currentGameTest = playerGameInfoTable.getCurrentNumber(connectionHandler, "current_game_id", playerID);
 
         Assertions.assertEquals(currentGame, currentGameTest);

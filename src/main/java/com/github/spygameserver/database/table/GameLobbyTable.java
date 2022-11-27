@@ -19,7 +19,7 @@ import netscape.javascript.JSObject;
 
 public class GameLobbyTable extends AbstractTable {
 
-    private static final String NON_TESTING_TABLE_NAME = "game_lobby";
+    private static final TableType TABLE_TYPE = TableType.GAME_LOBBY;
 
     private static final String CREATE_TABLE_QUERY = "CREATE TABLE IF NOT EXISTS %s (game_id INT NOT NULL " +
             "AUTO_INCREMENT, invite_code CHAR(6), is_public INT, game_type INT, max_players INT, game_name " +
@@ -44,8 +44,8 @@ public class GameLobbyTable extends AbstractTable {
             " current_players, game_type, FROM %s WHERE is_public=1, start_time IS NULL";
 
 
-    public GameLobbyTable(boolean useTestTables) {
-        super(NON_TESTING_TABLE_NAME, useTestTables);
+    public GameLobbyTable() {
+        super(TABLE_TYPE);
     }
 
     @Override
