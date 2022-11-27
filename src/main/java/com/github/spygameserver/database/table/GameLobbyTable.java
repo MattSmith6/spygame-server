@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.Random;
 
@@ -133,14 +134,14 @@ public class GameLobbyTable extends AbstractTable {
         return new Pair<>(gameId, startTime);
     }
 
-    public void createGame(ConnectionHandler connectionHandler, int is_public,
+    public int createGame(ConnectionHandler connectionHandler, int is_public,
                            int game_type, int max_players, String gameName) {
         Connection connection = connectionHandler.getConnection();
         String insertIntoQuery = formatQuery(INSERT_INTO_QUERY);
 
         String inviteCode = generateInviteCode(connectionHandler);
 
-        try (PreparedStatement preparedStatement = connection.prepareStatement(insertIntoQuery)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertIntoQuery, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, inviteCode);
             preparedStatement.setInt(2, is_public);
             preparedStatement.setInt(3, game_type);
@@ -149,11 +150,18 @@ public class GameLobbyTable extends AbstractTable {
             preparedStatement.setInt(6, 0);
 
             preparedStatement.executeUpdate();
+
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+            if(resultSet.next()) {
+                return resultSet.getInt(1);
+            }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
         connectionHandler.closeConnectionIfNecessary();
+
+        return -1;
     }
 
     public int getCurrentPlayers(ConnectionHandler connectionHandler, int gameID) {
@@ -199,7 +207,9 @@ public class GameLobbyTable extends AbstractTable {
         }
 
         if(maxPlayers == currentPlayers) {
-            updateStartTime(connectionHandler);
+            updateStartTime(connectionHandler, gameID);
+
+            //Maybe do something here?
         }
 
         connectionHandler.closeConnectionIfNecessary();
@@ -223,7 +233,7 @@ public class GameLobbyTable extends AbstractTable {
         connectionHandler.closeConnectionIfNecessary();
     }
 
-    public void updateStartTime(ConnectionHandler connectionHandler) {
+    public void updateStartTime(ConnectionHandler connectionHandler, int gameID) {
         Connection connection = connectionHandler.getConnection();
         String updateUsernameQuery = formatQuery(UPDATE_START_TIME);
 
@@ -231,6 +241,7 @@ public class GameLobbyTable extends AbstractTable {
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameQuery)) {
             preparedStatement.setLong(1, startTime);
+            preparedStatement.setInt(2, gameID);
 
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
@@ -240,7 +251,7 @@ public class GameLobbyTable extends AbstractTable {
         connectionHandler.closeConnectionIfNecessary();
     }
 
-    public void updateEndTime(ConnectionHandler connectionHandler) {
+    public void updateEndTime(ConnectionHandler connectionHandler, int gameID) {
         Connection connection = connectionHandler.getConnection();
         String updateUsernameQuery = formatQuery(UPDATE_END_TIME);
 
@@ -248,6 +259,7 @@ public class GameLobbyTable extends AbstractTable {
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameQuery)) {
             preparedStatement.setLong(1, endTime);
+            preparedStatement.setInt(2, gameID);
 
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
@@ -274,9 +286,14 @@ public class GameLobbyTable extends AbstractTable {
                     shownGame.isPublic = resultSet.getInt(3);
                     shownGame.gameType = resultSet.getInt(4);
                     shownGame.maxPlayers = resultSet.getInt(5);
-                    shownGame.currentPlayers = resultSet.getInt(6);
-                    shownGame.startTime = resultSet.getLong(7);
-                    shownGame.endTime = resultSet.getLong(8);
+                    shownGame.gameName = resultSet.getString(6);
+                    shownGame.currentPlayers = resultSet.getInt(7);
+                    shownGame.startTime = resultSet.getLong(8);
+                    if(resultSet.wasNull())
+                        shownGame.startTime = null;
+                    shownGame.endTime = resultSet.getLong(9);
+                    if(resultSet.wasNull())
+                        shownGame.endTime = null;
                 }
             }
         } catch (SQLException ex) {
@@ -378,6 +395,7 @@ public class GameLobbyTable extends AbstractTable {
         int isPublic = -1;
         int gameType = -1;
         int maxPlayers = -1;
+        String gameName = null;
         int currentPlayers = -1;
         Long startTime = null;
         Long endTime = null;

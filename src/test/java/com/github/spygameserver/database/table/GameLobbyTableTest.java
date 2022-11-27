@@ -30,8 +30,6 @@ public class GameLobbyTableTest implements DatabaseRequiredTest {
         gameLobbyTable = gameDatabase.getGameLobbyTable();
         connectionHandler = gameDatabase.getNewConnectionHandler(false);
 
-        // Make sure no data persists, since these fields need to be unique
-        gameLobbyTable.dropTableSecure(connectionHandler);
         gameLobbyTable.initialize(connectionHandler);
     }
 
@@ -39,10 +37,10 @@ public class GameLobbyTableTest implements DatabaseRequiredTest {
     public void testAllPaths() {
         String inviteCode = null;
         String gameName = "Test Game";
+        int gameID;
 
-        gameLobbyTable.createTableIfNotExists(connectionHandler);
-        gameLobbyTable.createGame(connectionHandler, 0, 0, 1, gameName);
-        inviteCode = gameLobbyTable.getInviteCode(connectionHandler, 1);
+        gameID = gameLobbyTable.createGame(connectionHandler, 0, 0, 1, gameName);
+        inviteCode = gameLobbyTable.getInviteCode(connectionHandler, gameID);
         GameLobbyTable.Pair<Integer, Long> gameStuff = gameLobbyTable.getGameIdFromInviteCode(connectionHandler, inviteCode);
 
         Assertions.assertTrue(gameStuff.getR() == null);
@@ -55,14 +53,16 @@ public class GameLobbyTableTest implements DatabaseRequiredTest {
         GameLobbyTable.game testGame = new GameLobbyTable.game();
         testGame = gameLobbyTable.showAll(connectionHandler, inviteCode);
 
-        Assertions.assertTrue(testGame.startTime == null);
-        Assertions.assertTrue(testGame.endTime == null);
+        Assertions.assertNull(testGame.startTime);
+        Assertions.assertNull(testGame.endTime);
 
-        gameLobbyTable.updateStartTime(connectionHandler);
-        gameLobbyTable.updateEndTime(connectionHandler);
+        gameLobbyTable.updateStartTime(connectionHandler, gameID);
+        gameLobbyTable.updateEndTime(connectionHandler, gameID);
 
-        Assertions.assertTrue(testGame.startTime != null);
-        Assertions.assertTrue(testGame.endTime != null);
+        testGame = gameLobbyTable.showAll(connectionHandler, inviteCode);
+
+        Assertions.assertNotNull(testGame.startTime);
+        Assertions.assertNotNull(testGame.endTime);
     }
 
     @AfterAll

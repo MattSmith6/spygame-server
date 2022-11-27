@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public abstract class AbstractTable {
 
     private static final String CHECK_IF_EMPTY_QUERY = "SELECT 1 FROM %s LIMIT 1";
-    private static final String DROP_TABLE_QUERY = "DROP TABLE %s";
+    private static final String DELETE_ALL_QUERY = "DELETE FROM %s";
 
     private static final String TESTING_TABLE_PREFIX = "test_";
 
@@ -35,14 +35,14 @@ public abstract class AbstractTable {
     // Drop the table only if test table is being used, will not drop a production table
     public void dropTableSecure(ConnectionHandler connectionHandler) {
         if (!useTestTables) {
-            throw new IllegalStateException("Cannot securely drop a table that is not a test table.");
+            throw new IllegalStateException("Cannot securely delete all from table that is not a test table.");
         }
 
         Connection connection = connectionHandler.getConnection();
-        String dropTableQuery = formatQuery(DROP_TABLE_QUERY);
+        String dropTableQuery = formatQuery(DELETE_ALL_QUERY);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(dropTableQuery)) {
-            preparedStatement.execute();
+            preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
