@@ -8,13 +8,15 @@ public class VerifyOrDisableEmailCreator extends EmailCreator {
 
 	private static final String SUBJECT_MESSAGE = "Spy Game - Verify your Account";
 
-	private static final String URL_VERIFY_FORMAT = "http://137.184.180.66/account/email/verify/?token=%s&email=%s";
-	private static final String URL_DISABLE_FORMAT = "http://137.184.180.66/account/email/disable/?token=%s&email=%s";
+	private static final String URL_VERIFY = "http://137.184.180.66/account/email/verify/";
+	private static final String URL_DISABLE = "http://137.184.180.66/account/email/disable/";
 
-	private static final String HTML_BODY_FORMAT = "<p>Click this <a href=\"%s\">link</a> to verify your email to " +
+	private static final String HTML_BODY_FORMAT = "<p>Click the following button to verify your email to " +
 			"start playing Spy Game.</p>" +
-			"<br><p>Don't recognize this email? Click <a href=\"%s\">here</a> to disable your account for Spy Game." +
-			" Don't worry, you'll always be able to re-register an account if you do this in error.</p>";
+			"<button onclick=\"post('%1$s', { email: '%2$s', token: '%3$s' })\">Verify account</button>" +
+			"<br><p>Don't recognize this email? Click below to disable your account for Spy Game." +
+			" Don't worry, you'll always be able to re-register an account if you do this in error.</p>" +
+			"<button onclick=\"post('%4$s', { email: '%2$s', token: '%3$s' })\">Disable account</button>";
 
 	private final String verificationToken;
 
@@ -31,10 +33,7 @@ public class VerifyOrDisableEmailCreator extends EmailCreator {
 
 	@Override
 	protected String getHtmlBodyMessage() {
-		String verifyUrl = String.format(URL_VERIFY_FORMAT, verificationToken, getEncodedPlayerEmail());
-		String disableUrl = String.format(URL_DISABLE_FORMAT, verificationToken, getEncodedPlayerEmail());
-
-		return String.format(HTML_BODY_FORMAT, verifyUrl, disableUrl);
+		return String.format(HTML_BODY_FORMAT, URL_VERIFY, getEncodedPlayerEmail(), verificationToken, URL_DISABLE);
 	}
 
 }
