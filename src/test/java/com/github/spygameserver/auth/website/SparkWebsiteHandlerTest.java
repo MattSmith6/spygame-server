@@ -36,16 +36,19 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /**
- * The test will break work once the token field is required for email verification, as these are dummy variables.
- * Ensuring that this test passes before implementation of the email verification allows testing to be conducted on the app,
- * while knowing that all server website functions work correctly when the verification works correctly.
+ * After reassessing the requirements for verification, using a normal email service with verification tokens is easier than Google integration.
+ * Ensuring that these tests pass before implementation of the app, lets us know that any errors encountered are a result
+ * of code
  *
  * This test is designed to test the functionality of all the spark handler subprocesses:
- * 1. Adding a verified email (step 1/2 for account creation)
- * 2. Choosing a username and password (step 2/2 for account creation)
- * 3. Resetting password
- * 4. Recovering lost username
- * 5. Check username exists (for account screen integration)
+ * 1. Creating an account using a unique CSUN email and username
+ * 2. Recovering lost username, by email request
+ * 3. Sending
+ * 2. Resetting password, with token (the web process POST request)
+ * 3. Disabling account, with token (the web process POST request)
+ * 4. Check username exists (for account screen integration)
+ *
+ * This test does not check for
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

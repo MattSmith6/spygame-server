@@ -7,7 +7,7 @@ import com.github.spygameserver.player.account.AccountVerificationStatus;
 import org.json.JSONObject;
 import spark.Response;
 
-public class VerifyEmailAccountRoute extends TokenRequiredRoute {
+public class VerifyEmailAccountRoute extends UpdateVerificationStatusTokenRoute {
 
 	public VerifyEmailAccountRoute(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
 		super(gameDatabase, authenticationDatabase);

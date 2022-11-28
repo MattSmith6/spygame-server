@@ -44,7 +44,7 @@ public class VerificationTokenTable extends AbstractTable {
 		connectionHandler.closeConnectionIfNecessary();
 	}
 
-	public void addNewVerificationTokenForPlayer(ConnectionHandler connectionHandler, int playerId) {
+	public String addNewVerificationTokenForPlayer(ConnectionHandler connectionHandler, int playerId) {
 		Connection connection = connectionHandler.getConnection();
 		String insertIntoQuery = formatQuery(INSERT_INTO_QUERY);
 
@@ -60,6 +60,7 @@ public class VerificationTokenTable extends AbstractTable {
 		}
 
 		connectionHandler.closeConnectionIfNecessary();
+		return token;
 	}
 
 	private String generateNewVerificationToken() {

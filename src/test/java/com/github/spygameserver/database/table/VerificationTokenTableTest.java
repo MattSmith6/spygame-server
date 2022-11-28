@@ -26,11 +26,11 @@ public class VerificationTokenTableTest implements DatabaseRequiredTest {
 	@Test
 	public void testAllPaths() {
 		VerificationTokenTable verificationTokenTable = authenticationDatabase.getVerificationTokenTable();
-		verificationTokenTable.addNewVerificationTokenForPlayer(connectionHandler, TEST_PLAYER_ID);
+		String verificationToken = verificationTokenTable.addNewVerificationTokenForPlayer(connectionHandler, TEST_PLAYER_ID);
 
 		// Assert that we have a token for the player id after insert
-		String verificationToken = verificationTokenTable.getVerificationTokenFromPlayerId(connectionHandler, TEST_PLAYER_ID);
-		Assertions.assertNotNull(verificationToken);
+		String realVerificationToken = verificationTokenTable.getVerificationTokenFromPlayerId(connectionHandler, TEST_PLAYER_ID);
+		Assertions.assertEquals(verificationToken, realVerificationToken);
 
 		// Assert that the token's player id matches the id (redundant, but tests SQL query validity)
 		int foundPlayerId = verificationTokenTable.getPlayerIdFromVerificationToken(connectionHandler, verificationToken);

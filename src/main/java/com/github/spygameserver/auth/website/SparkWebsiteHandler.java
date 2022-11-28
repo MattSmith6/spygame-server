@@ -1,8 +1,9 @@
 package com.github.spygameserver.auth.website;
 
-import com.github.spygameserver.auth.website.email.GetAccountUsernameRoute;
+import com.github.spygameserver.auth.website.email.RequestAccountUsernameRoute;
 import com.github.spygameserver.auth.website.email.RegisterAccountRoute;
-import com.github.spygameserver.auth.website.email.ResetPasswordRoute;
+import com.github.spygameserver.auth.website.email.RequestPasswordResetRoute;
+import com.github.spygameserver.auth.website.token.ResetPasswordRoute;
 import com.github.spygameserver.auth.website.token.DisablePlayerAccountRoute;
 import com.github.spygameserver.auth.website.token.VerifyEmailAccountRoute;
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
@@ -17,26 +18,27 @@ public class SparkWebsiteHandler {
 
     private void setupVerifyEmailPostRequest(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
         Spark.port(80);
-        //System.out.println(System.getProperty("user.dir") + File.separator + "public");
-        //Spark.externalStaticFileLocation(System.getProperty("user.dir") + File.separator + "public");
 
         Spark.staticFileLocation("/public");
 
         Spark.path("/account", () -> {
 
             Spark.path("/email", () -> {
-                Spark.post("/verify", new VerifyEmailAccountRoute(gameDatabase, authenticationDatabase));
-                Spark.post("/disable", new DisablePlayerAccountRoute(gameDatabase, authenticationDatabase));
+                Spark.get("/verify", new VerifyEmailAccountRoute(gameDatabase, authenticationDatabase));
+                Spark.get("/disable", new DisablePlayerAccountRoute(gameDatabase, authenticationDatabase));
             });
 
             Spark.path("/username", () -> {
-                    Spark.post("/get", new GetAccountUsernameRoute(gameDatabase));
+                    Spark.post("/request", new RequestAccountUsernameRoute(gameDatabase));
                     Spark.get("/check/:username", new CheckUsernameExistsRoute(gameDatabase));
             });
 
             Spark.post("/register", new RegisterAccountRoute(gameDatabase, authenticationDatabase));
 
-            Spark.post("/reset", new ResetPasswordRoute(gameDatabase, authenticationDatabase));
+            Spark.path("/reset", () -> {
+                Spark.post("/request", new RequestPasswordResetRoute(gameDatabase, authenticationDatabase));
+                Spark.post("/doReset", new ResetPasswordRoute(gameDatabase, authenticationDatabase));
+            });
         });
     }
 

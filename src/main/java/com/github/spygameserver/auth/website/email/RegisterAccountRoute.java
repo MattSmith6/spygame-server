@@ -5,8 +5,10 @@ import com.github.spygameserver.database.ConnectionHandler;
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.impl.GameDatabase;
 import com.github.spygameserver.database.table.PlayerAccountTable;
+import com.github.spygameserver.email.VerifyOrDisableEmailCreator;
 import com.github.spygameserver.player.account.AccountVerificationStatus;
 import com.github.spygameserver.player.account.PlayerAccountData;
+import org.apache.commons.mail.EmailException;
 import org.json.JSONObject;
 import spark.Response;
 
@@ -80,7 +82,7 @@ public class RegisterAccountRoute extends EmailRequiredRoute {
         PlayerAuthenticationData playerAuthenticationData = new PlayerAuthenticationData(playerId, username, password);
 
         // Add authentication information to the database
-        connectionHandler = authenticationDatabase.getNewConnectionHandler(true);
+        connectionHandler = authenticationDatabase.getNewConnectionHandler(false);
 
         if (playerAccountData == null) {
             authenticationDatabase.getAuthenticationTable().addPlayerAuthenticationRecord(connectionHandler,
@@ -88,6 +90,15 @@ public class RegisterAccountRoute extends EmailRequiredRoute {
         } else {
             authenticationDatabase.getAuthenticationTable().updatePlayerAuthenticationRecord(connectionHandler,
                     playerAuthenticationData);
+        }
+
+        String verificationToken = authenticationDatabase.getVerificationTokenTable()
+                .addNewVerificationTokenForPlayer(connectionHandler, playerId);
+
+        try {
+            new VerifyOrDisableEmailCreator(email, verificationToken).sendNewEmail();
+        } catch (EmailException ex) {
+            ex.printStackTrace();
         }
 
         return getSuccessObject();
