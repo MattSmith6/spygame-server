@@ -28,6 +28,8 @@ import org.junit.jupiter.api.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -314,7 +316,16 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
     }
 
     private HttpGet makeGetRequest(String path, Map<String, String> keyValuePairs) {
-        return new HttpGet(getUrlFromPath(path));
+        HttpGet httpGet = new HttpGet(getUrlFromPath(path));
+
+        try {
+            URI uri = new URIBuilder(httpGet.getUri()).addParameters(getNameValuePairList(keyValuePairs)).build();
+            httpGet.setUri(uri);
+        } catch (URISyntaxException ex) {
+            ex.printStackTrace();
+        }
+
+        return httpGet;
     }
 
     private HttpPost makePostRequest(String path, Map<String, String> keyValuePairs) {

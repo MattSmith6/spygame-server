@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
-public class ServerPacketReader {
+public class ServerPacketReader extends Thread {
 
     private final Socket socket;
     private final BufferedReader bufferedReader;
@@ -30,10 +30,13 @@ public class ServerPacketReader {
 
         this.playerEncryptionKey = new PlayerEncryptionKey();
 
-        initialize();
+
     }
 
-    public void initialize() {
+    @Override
+    public void run() {
+        super.run();
+
         while (!socket.isClosed()) {
             processPacket();
         }

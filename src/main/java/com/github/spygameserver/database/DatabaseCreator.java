@@ -13,14 +13,10 @@ import java.util.function.Function;
  */
 public class DatabaseCreator<T extends AbstractDatabase> {
 
-    private static final String RESOURCES_DIRECTORY = "hikari";
-
     private final DatabaseType databaseType;
-    private final boolean useTestTables;
 
-    public DatabaseCreator(DatabaseType databaseType, boolean useTestTables) {
+    public DatabaseCreator(DatabaseType databaseType) {
         this.databaseType = databaseType;
-        this.useTestTables = useTestTables;
     }
 
     public T createDatabase(Function<DatabaseConnectionManager, T> databaseConstructor) {

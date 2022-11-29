@@ -17,7 +17,7 @@ public interface DatabaseRequiredTest {
 
     default <T extends AbstractDatabase> T getDatabase(DatabaseType databaseType,
                                                        Function<DatabaseConnectionManager, T> databaseConstructor) {
-        DatabaseCreator<T> databaseCreator = new DatabaseCreator<>(databaseType, true);
+        DatabaseCreator<T> databaseCreator = new DatabaseCreator<>(databaseType);
         return databaseCreator.createDatabase(databaseConstructor);
     }
 
