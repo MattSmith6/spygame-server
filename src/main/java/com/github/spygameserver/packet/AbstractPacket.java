@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public abstract class AbstractPacket {
 
@@ -19,19 +20,19 @@ public abstract class AbstractPacket {
         return this.packetId;
     }
 
-    public abstract void process(PacketManager packetManager, PlayerEncryptionKey playerEncryptionKey,
-                                 BufferedReader bufferedReader, BufferedWriter bufferedWriter);
+    public abstract boolean process(PacketManager packetManager, PlayerEncryptionKey playerEncryptionKey,
+                                 BufferedReader bufferedReader, PrintWriter printWriter);
 
     protected void writeJSONObjectToOutput(PlayerEncryptionKey playerEncryptionKey, JSONObject jsonObject,
-                                           BufferedWriter bufferedWriter) throws IOException {
+                                           PrintWriter printWriter) throws IOException {
         String encryptedObject = playerEncryptionKey.encryptJSONObject(jsonObject);
-        bufferedWriter.write(encryptedObject);
+
+        printWriter.println(encryptedObject);
     }
 
     protected JSONObject readJSONObjectFromInput(PlayerEncryptionKey playerEncryptionKey,
                                                  BufferedReader bufferedReader) throws IOException {
-        String readObject = bufferedReader.readLine();
-        return playerEncryptionKey.decryptJSONObject(readObject);
+        return playerEncryptionKey.decryptJSONObject(bufferedReader.readLine());
     }
 
 }

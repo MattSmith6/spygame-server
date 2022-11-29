@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,8 +30,8 @@ public class LeaderboardPacket extends AbstractPacket {
     }
 
     @Override
-    public void process(PacketManager packetManager, PlayerEncryptionKey playerEncryptionKey,
-                        BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+    public boolean process(PacketManager packetManager, PlayerEncryptionKey playerEncryptionKey,
+                        BufferedReader bufferedReader, PrintWriter printWriter) {
         try {
             // Read object from the reader, can read using #getInt, #getString, etc.
             JSONObject firstReadObject = readJSONObjectFromInput(playerEncryptionKey, bufferedReader);
@@ -46,9 +47,12 @@ public class LeaderboardPacket extends AbstractPacket {
             objectToSend = gameInfoTable.getLeaderboard(connectionHandler, lbsize);
 
             // Write the JSON object to the player's app
-            writeJSONObjectToOutput(playerEncryptionKey, objectToSend, bufferedWriter);
+            writeJSONObjectToOutput(playerEncryptionKey, objectToSend, printWriter);
+
+            return true;
         } catch (IOException ex) {
             ex.printStackTrace();
+            return false;
         }
     }
 }

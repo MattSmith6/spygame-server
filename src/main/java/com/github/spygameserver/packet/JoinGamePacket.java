@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 
 public class JoinGamePacket extends AbstractPacket {
@@ -29,8 +30,8 @@ public class JoinGamePacket extends AbstractPacket {
     }
 
     @Override
-    public void process(PacketManager packetManager, PlayerEncryptionKey playerEncryptionKey,
-                        BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+    public boolean process(PacketManager packetManager, PlayerEncryptionKey playerEncryptionKey,
+                        BufferedReader bufferedReader, PrintWriter printWriter) {
         try {
             // Read object from the reader, can read using #getInt, #getString, etc.
             JSONObject firstReadObject = readJSONObjectFromInput(playerEncryptionKey, bufferedReader);
@@ -66,9 +67,11 @@ public class JoinGamePacket extends AbstractPacket {
             objectToSend.put("success", canJoinGame);
 
             // Write the JSON object to the player's app
-            writeJSONObjectToOutput(playerEncryptionKey, objectToSend, bufferedWriter);
+            writeJSONObjectToOutput(playerEncryptionKey, objectToSend, printWriter);
+            return true;
         } catch (IOException ex) {
             ex.printStackTrace();
+            return false;
         }
     }
 }

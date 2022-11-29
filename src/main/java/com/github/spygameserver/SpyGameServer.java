@@ -9,6 +9,8 @@ import com.github.spygameserver.database.table.TableType;
 import com.github.spygameserver.packet.PacketManager;
 import com.github.spygameserver.packet.ServerPacketReader;
 import com.github.spygameserver.util.ExceptionHandling;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,7 +19,10 @@ import java.util.Scanner;
 
 public class SpyGameServer {
 
+    public static Logger LOGGER = LoggerFactory.getLogger(SpyGameServer.class);;
     private static final int SOCKET_PORT = 6532;
+
+    private static volatile boolean run = true;
 
     public static void main(String[] args) {
         // Use production tables, not the testing tables
@@ -41,12 +46,12 @@ public class SpyGameServer {
             System.exit(-1);
         }
 
-        Scanner scanner = new Scanner(System.in);
-        while (!scanner.nextLine().trim().equals("exit")) {
+        while (run) {
             // Keep running program unless we receive the exit command
 
             try {
                 Socket socket = serverSocket.accept();
+                LOGGER.info("Accepted connection from " + socket.getInetAddress().toString());
                 Thread serverPacketReader = new ServerPacketReader(socket, packetManager);
 
                 serverPacketReader.start();

@@ -1,13 +1,14 @@
 package com.github.spygameserver.email;
 
+import com.github.spygameserver.util.StringUtils;
+
 public class ResetPasswordEmailCreator extends EmailCreator {
 
 	private static final String SUBJECT_MESSAGE = "Spy Game - Password Reset";
 
 	private static final String URL = "http://137.184.180.66/resetPassword.html";
 
-	private static final String HTML_BODY_FORMAT = "<p>Click the following button to reset your password for your Spy Game account:</p>" +
-			"<button onclick=\"post('%s', { email: '%s', token: '%s' })\">Reset password</button>";
+	private static final String HTML_BODY_FORMAT = "Use the following link to reset your password: %s?%s";
 
 	private final String verificationToken;
 
@@ -23,8 +24,9 @@ public class ResetPasswordEmailCreator extends EmailCreator {
 	}
 
 	@Override
-	protected String getHtmlBodyMessage() {
-		return String.format(HTML_BODY_FORMAT, URL, verificationToken, getEncodedPlayerEmail());
+	protected String getMessageBody() {
+		String getParameters = StringUtils.join('&', verificationToken, getEncodedPlayerEmail());
+		return String.format(HTML_BODY_FORMAT, URL, getParameters);
 	}
 
 }

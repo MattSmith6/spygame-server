@@ -3,7 +3,7 @@ package com.github.spygameserver.util;
 public class StringUtils {
 
 	// Inspiration taken from Apache Commons #join
-	public static String join(String[] parameters, char separator) {
+	public static String join(char separator, String... parameters) {
 		if (parameters.length == 1) {
 			return parameters[0];
 		}

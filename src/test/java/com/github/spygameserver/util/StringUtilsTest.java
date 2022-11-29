@@ -7,17 +7,12 @@ public class StringUtilsTest {
 
 	@Test
 	public void testJoinOneParameter() {
-		String testString = "abc";
-		String[] stringArray = new String[] { testString };
-
-		Assertions.assertEquals(testString, StringUtils.join(stringArray, '&'));
+		Assertions.assertEquals("abc", StringUtils.join('&', "abc"));
 	}
 
 	@Test
 	public void testMultipleParameters() {
-		String[] stringArray = new String[] { "abc", "def", "ghi", "jkl" };
-
-		Assertions.assertEquals("abc&def&ghi&jkl", StringUtils.join(stringArray, '&'));
+		Assertions.assertEquals("abc&def&ghi&jkl", StringUtils.join('&', "abc", "def", "ghi", "jkl"));
 	}
 
 }

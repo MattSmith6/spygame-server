@@ -1,8 +1,6 @@
 package com.github.spygameserver.email;
 
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import com.github.spygameserver.util.StringUtils;
 
 public class VerifyOrDisableEmailCreator extends EmailCreator {
 
@@ -11,12 +9,9 @@ public class VerifyOrDisableEmailCreator extends EmailCreator {
 	private static final String URL_VERIFY = "http://137.184.180.66/account/email/verify/";
 	private static final String URL_DISABLE = "http://137.184.180.66/account/email/disable/";
 
-	private static final String HTML_BODY_FORMAT = "<p>Click the following button to verify your email to " +
-			"start playing Spy Game.</p>" +
-			"<button onclick=\"post('%1$s', { email: '%2$s', token: '%3$s' })\">Verify account</button>" +
-			"<br><p>Don't recognize this email? Click below to disable your account for Spy Game." +
-			" Don't worry, you'll always be able to re-register an account if you do this in error.</p>" +
-			"<button onclick=\"post('%4$s', { email: '%2$s', token: '%3$s' })\">Disable account</button>";
+	private static final String BODY_FORMAT = "Here's your verification link: %1$s?%2$s\n\n" +
+			"Don't recognize this email? Here's a link to disable this Spy Game account: %3$s?%2$s\n" +
+			"(Don't worry, you'll always be able to re-register an account if you do this in error)";
 
 	private final String verificationToken;
 
@@ -32,8 +27,9 @@ public class VerifyOrDisableEmailCreator extends EmailCreator {
 	}
 
 	@Override
-	protected String getHtmlBodyMessage() {
-		return String.format(HTML_BODY_FORMAT, URL_VERIFY, getEncodedPlayerEmail(), verificationToken, URL_DISABLE);
+	protected String getMessageBody() {
+		String getParameters = StringUtils.join('&', getEncodedPlayerEmail(), verificationToken);
+		return String.format(BODY_FORMAT, URL_VERIFY, getParameters, URL_DISABLE);
 	}
 
 }

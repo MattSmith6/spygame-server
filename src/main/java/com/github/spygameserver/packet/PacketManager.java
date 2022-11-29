@@ -2,6 +2,7 @@ package com.github.spygameserver.packet;
 
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.impl.GameDatabase;
+import com.github.spygameserver.packet.auth.ServerHandshakePacket;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,14 @@ public class PacketManager {
         this.authenticationDatabase = authenticationDatabase;
 
         this.packetIdToPacketMap = new HashMap<>();
+
+        // Authentication packets
+        registerPacket(new ServerHandshakePacket());
+
+        // Game lobby and leaderboard packets
+        registerPacket(new JoinGamePacket());
+        registerPacket(new LeaderboardPacket());
+        registerPacket(new ShowPublicGamesPacket());
     }
 
     private void registerPacket(AbstractPacket abstractPacket) {
