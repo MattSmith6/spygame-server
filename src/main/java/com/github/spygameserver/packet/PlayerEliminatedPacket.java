@@ -18,7 +18,7 @@ public class PlayerEliminatedPacket extends AbstractPacket {
 
     private static final int PACKET_ID = 14;
 
-    int eliminatorID, playerID, gameID, maxPlayers, eliminatedPlayers;
+    int eliminatorID, playerID, gameID, maxPlayers, eliminatedPlayers, ended = 0;
 
     public PlayerEliminatedPacket() {
         super(PACKET_ID);
@@ -50,6 +50,7 @@ public class PlayerEliminatedPacket extends AbstractPacket {
             if(maxPlayers == (eliminatedPlayers + 1))
             {
                 gameLobbyTable.updateEndTime(connectionHandler, gameID);
+                ended = 1;
             }
 
             // Set object properties using #put
@@ -58,7 +59,7 @@ public class PlayerEliminatedPacket extends AbstractPacket {
             connectionHandler.setShouldCloseConnectionAfterUse(true);
             connectionHandler.closeConnectionIfNecessary();
 
-            objectToSend.put("success", canJoinGame);
+            objectToSend.put("ended", ended);
 
             // Write the JSON object to the player's app
             writeJSONObjectToOutput(playerEncryptionKey, objectToSend, bufferedWriter);
