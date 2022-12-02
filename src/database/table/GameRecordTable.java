@@ -22,7 +22,7 @@ public class GameRecordTable extends AbstractTable {
             "elimination_time bigint NOT NULL, PRIMARY KEY (record_id))";
     private static final String INSERT_INTO_QUERY = "INSERT INTO %s (    record_id, game_id,    eliminator_id,  eliminatee_id,    elimination_time) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE %s SET game_id=?, eliminator_id=?,  eliminatee_id=?,    elimination_time=? WHERE record_id=?";
-    private static final String SELECT_QUERY = "SELECT    record_id, game_id,    eliminator_id,  eliminatee_id,    elimination_time FROM %s WHERE game_id=?";
+    private static final String SELECT_QUERY = "SELECT    record_id, game_id,    eliminator_id,  eliminatee_id,    elimination_time FROM %s WHERE game_id=? order by  elimination_time asc";
 
     public GameRecordTable(boolean useTestTables) {
         super(NON_TESTING_TABLE_NAME, useTestTables);
@@ -61,7 +61,7 @@ public void insertGameRecord(ConnectionHandler connectionHandler, game_record re
 }
 
 //Second Function Table to select from  table
-private Map<Integer, game_record> selectGameRecord(ConnectionHandler connectionHandler, int game_id) {
+Map<Integer, game_record> selectGameRecord(ConnectionHandler connectionHandler, int game_id) {
     Connection connection = connectionHandler.getConnection();
     String selectOneQuery = formatQuery(SELECT_QUERY);
     game_record dataObject = null;
