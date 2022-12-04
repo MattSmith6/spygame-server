@@ -1,6 +1,5 @@
 package com.github.spygameserver.packet;
 
-import com.github.spygameserver.SpyGameServer;
 import com.github.spygameserver.auth.PlayerEncryptionKey;
 import com.github.spygameserver.packet.auth.ServerHandshakePacket;
 import com.github.spygameserver.util.ExceptionHandling;
@@ -8,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -69,7 +67,7 @@ public class ServerPacketReader extends Thread {
             return;
         }
 
-        AbstractPacket abstractPacket = packetManager.getPacket(packetId);
+        AbstractPacket abstractPacket = packetManager.getNewPacket(packetId);
         if (abstractPacket == null) {
             LOGGER.warn("Packet id not found.");
             writeError("Packet id not found.");

@@ -6,13 +6,14 @@ import com.github.spygameserver.packet.auth.ServerHandshakePacket;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class PacketManager {
 
     private final GameDatabase gameDatabase;
     private final AuthenticationDatabase authenticationDatabase;
 
-    private final Map<Integer, AbstractPacket> packetIdToPacketMap;
+    private final Map<Integer, Supplier<AbstractPacket>> packetIdToPacketMap;
 
     public PacketManager(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
         this.gameDatabase = gameDatabase;
@@ -21,20 +22,23 @@ public class PacketManager {
         this.packetIdToPacketMap = new HashMap<>();
 
         // Authentication packets
-        registerPacket(new ServerHandshakePacket());
+        registerPacket(ServerHandshakePacket::new);
 
         // Game lobby and leaderboard packets
-        registerPacket(new JoinGamePacket());
-        registerPacket(new LeaderboardPacket());
-        registerPacket(new ShowPublicGamesPacket());
+        registerPacket(JoinGamePacket::new);
+        registerPacket(LeaderboardPacket::new);
+        registerPacket(ShowPublicGamesPacket::new);
     }
 
-    private void registerPacket(AbstractPacket abstractPacket) {
-        packetIdToPacketMap.put(abstractPacket.getPacketId(), abstractPacket);
+    private void registerPacket(Supplier<AbstractPacket> abstractPacketSupplier) {
+        int packetId = abstractPacketSupplier.get().getPacketId();
+
+        packetIdToPacketMap.put(packetId, abstractPacketSupplier);
     }
 
-    public AbstractPacket getPacket(int packetNumber) {
-        return packetIdToPacketMap.get(packetNumber);
+    public AbstractPacket getNewPacket(int packetNumber) {
+        Supplier<AbstractPacket> abstractPacketSupplier = packetIdToPacketMap.get(packetNumber);
+        return abstractPacketSupplier == null ? null : abstractPacketSupplier.get();
     }
 
     public GameDatabase getGameDatabase() {
