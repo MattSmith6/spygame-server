@@ -9,7 +9,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-public class ExamplePacket extends AbstractPacket {
+public class GameRecordLogPacket extends AbstractPacket {
 
     private static final int PACKET_ID = 31; //pick the number for the package
     //variable info;
