@@ -8,19 +8,25 @@ import com.github.spygameserver.database.table.PlayerGameInfoTable;
 import com.github.spygameserver.packet.AbstractPacket;
 import com.github.spygameserver.packet.PacketManager;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-public class PlayerEliminatedPacket extends AbstractPacket {
+public class ShowLobbyPacket extends AbstractPacket {
 
-    private static final int PACKET_ID = 14;
+    private static final int PACKET_ID = 15;
 
-    int eliminatorID, playerID, gameID, maxPlayers, eliminatedPlayers = 0, ended = 0;
+    String inviteCode;
+    GameLobbyTable.game currentGame = null;
+    GameLobbyTable.Pair<Integer, Long> gameStuff = null;
 
-    public PlayerEliminatedPacket() {
+    public ShowLobbyPacket() {
         super(PACKET_ID);
     }
 
@@ -31,35 +37,26 @@ public class PlayerEliminatedPacket extends AbstractPacket {
             // Read object from the reader, can read using #getInt, #getString, etc.
             JSONObject firstReadObject = readJSONObjectFromInput(playerEncryptionKey, bufferedReader);
 
-            eliminatorID = firstReadObject.getInt("eliminator_id");
-
-            GameDatabase gameDatabase = packetManager.getGameDatabase();
-            GameLobbyTable gameLobbyTable = gameDatabase.getGameLobbyTable();
-            PlayerGameInfoTable playerGameInfoTable = gameDatabase.getPlayerGameInfoTable();
-
-            playerID = playerEncryptionKey.getPlayerId();
-
-            //Update Game Record Table
-
-            ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(false);
-
-            gameID = playerGameInfoTable.getCurrentNumber(connectionHandler, "current_game_id", playerID);
-            maxPlayers = gameLobbyTable.getCurrentPlayers(connectionHandler, gameID);
-
-            //Check eliminated players vs max/current players
-            if(maxPlayers == (eliminatedPlayers + 1))
-            {
-                gameLobbyTable.updateEndTime(connectionHandler, gameID);
-                ended = 1;
-            }
+            inviteCode = firstReadObject.getString("invite_code");
 
             // Set object properties using #put
             JSONObject objectToSend = new JSONObject();
 
-            connectionHandler.setShouldCloseConnectionAfterUse(true);
-            connectionHandler.closeConnectionIfNecessary();
+            GameDatabase gameDatabase = packetManager.getGameDatabase();
+            PlayerGameInfoTable gameInfoTable = gameDatabase.getPlayerGameInfoTable();
+            GameLobbyTable gameLobbyTable = gameDatabase.getGameLobbyTable();
 
-            objectToSend.put("ended", ended);
+            ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
+
+            gameStuff = gameLobbyTable.getGameIdFromInviteCode(connectionHandler, inviteCode);
+
+            objectToSend = gameInfoTable.getCurrentLobby(connectionHandler, gameStuff.getL());
+
+            currentGame = gameLobbyTable.showAll(connectionHandler, inviteCode);
+
+            objectToSend.put("game_name", currentGame.getGameName());
+            objectToSend.put("current_players", currentGame.getCurrentPlayers());
+            objectToSend.put("max_players", currentGame.getMaxPlayers());
 
             // Write the JSON object to the player's app
             writeJSONObjectToOutput(playerEncryptionKey, objectToSend, bufferedWriter);

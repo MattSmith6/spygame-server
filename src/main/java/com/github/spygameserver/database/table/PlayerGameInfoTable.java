@@ -36,6 +36,9 @@ public class PlayerGameInfoTable extends AbstractTable {
             "ORDER BY player_game_info.points_earned DSC \n" +
             "LIMIT ?";
 
+    private static final String GET_CURRENT_LOBBY = "SELECT player_account.username FROM player_game_info" +
+            "WHERE player_game_info.current_game_id=?";
+
 
     public PlayerGameInfoTable(boolean useTestTables) {
         super(NON_TESTING_TABLE_NAME, useTestTables);
@@ -134,5 +137,31 @@ public class PlayerGameInfoTable extends AbstractTable {
 
         }
         return leaderboard;
+    }
+
+    public JSONObject getCurrentLobby(ConnectionHandler connectionHandler, int gameID) {
+        Connection connection = connectionHandler.getConnection();
+        String insertIntoQuery = formatQuery(GET_CURRENT_LOBBY);
+
+        JSONObject lobby = new JSONObject();
+        JSONArray usernames = new JSONArray();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertIntoQuery)) {
+            preparedStatement.setInt(1, gameID);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                // If there is a result, then this property does exist
+                while (resultSet.next()) {
+                    usernames.put(resultSet.getString(1));
+                }
+
+                lobby.put("Usernames", usernames);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+
+
+        }
+        return lobby;
     }
 }

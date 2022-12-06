@@ -399,6 +399,10 @@ public class GameLobbyTable extends AbstractTable {
         int currentPlayers = -1;
         Long startTime = null;
         Long endTime = null;
+
+        public String getGameName() { return gameName; }
+        public int getCurrentPlayers() { return currentPlayers; }
+        public int getMaxPlayers() { return maxPlayers; }
     }
 
     public static class Pair<L, R> {
