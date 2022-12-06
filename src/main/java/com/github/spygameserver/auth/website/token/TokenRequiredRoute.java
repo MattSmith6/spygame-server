@@ -38,6 +38,11 @@ public abstract class TokenRequiredRoute implements Route {
 
 		String token = jsonObject.getString("token");
 
+		if (token.length() != VerificationTokenTable.TOKEN_LENGTH) {
+			setErrorStatus(response);
+			return null;
+		}
+
 		if (!jsonObject.has("email")) {
 			setErrorStatus(response);
 			return null;

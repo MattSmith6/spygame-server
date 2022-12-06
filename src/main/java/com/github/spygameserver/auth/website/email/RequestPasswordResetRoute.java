@@ -10,6 +10,8 @@ import org.apache.commons.mail.EmailException;
 import org.json.JSONObject;
 import spark.Response;
 
+// Will return a success object if: a player account does not exist, or if a player account does exist and is verified
+// Will return an error object if: a player account exists but is not yet verified
 public class RequestPasswordResetRoute extends EmailRequiredRoute {
 
 	private final GameDatabase gameDatabase;
@@ -28,7 +30,7 @@ public class RequestPasswordResetRoute extends EmailRequiredRoute {
 
 		// Should never be null at this point, but avoid any potential errors here
 		if (playerAccountData == null) {
-			return getErrorObject("No account for this email.");
+			return getSuccessObject();
 		}
 
 		if (playerAccountData.getAccountVerificationStatus() != AccountVerificationStatus.VERIFIED) {

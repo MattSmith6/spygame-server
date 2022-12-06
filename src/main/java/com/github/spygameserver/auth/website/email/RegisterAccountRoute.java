@@ -95,6 +95,8 @@ public class RegisterAccountRoute extends EmailRequiredRoute {
         String verificationToken = authenticationDatabase.getVerificationTokenTable()
                 .addNewVerificationTokenForPlayer(connectionHandler, playerId);
 
+        connectionHandler.closeAbsolutely();
+
         try {
             new VerifyOrDisableEmailCreator(email, verificationToken).sendNewEmail();
         } catch (EmailException ex) {
