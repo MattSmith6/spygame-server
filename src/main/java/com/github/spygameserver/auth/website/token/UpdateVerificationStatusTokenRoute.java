@@ -6,6 +6,9 @@ import com.github.spygameserver.database.impl.GameDatabase;
 import com.github.spygameserver.player.account.AccountVerificationStatus;
 import org.json.JSONObject;
 
+/**
+ * A Route that requires a token to be used whose only purpose is to update the verification status if the token is valid.
+ */
 public abstract class UpdateVerificationStatusTokenRoute extends TokenRequiredRoute {
 
 	protected UpdateVerificationStatusTokenRoute(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
@@ -22,10 +25,10 @@ public abstract class UpdateVerificationStatusTokenRoute extends TokenRequiredRo
 		return true;
 	}
 
+	/**
+	 * The verification status to update to for the subclass
+	 * @return The verification status to update to for the subclass
+	 */
 	protected abstract AccountVerificationStatus getDesiredAccountVerificationStatus();
 
-	@Override
-	protected String getSuccessMessage() {
-		return null;
-	}
 }

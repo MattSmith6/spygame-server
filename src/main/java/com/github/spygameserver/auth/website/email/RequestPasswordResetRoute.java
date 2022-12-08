@@ -10,8 +10,11 @@ import org.apache.commons.mail.EmailException;
 import org.json.JSONObject;
 import spark.Response;
 
-// Will return a success object if: a player account does not exist, or if a player account does exist and is verified
-// Will return an error object if: a player account exists but is not yet verified
+/**
+ * A Route designed to send an email with a link to reset the player's account password.
+ * Will return a success object if: a player account does not exist, or if a player account does exist and is verified
+ * Will return an error object if: a player account exists but is not yet verified
+ */
 public class RequestPasswordResetRoute extends EmailRequiredRoute {
 
 	private final GameDatabase gameDatabase;
@@ -37,10 +40,12 @@ public class RequestPasswordResetRoute extends EmailRequiredRoute {
 			return getErrorObject("Verify your account before attempting to reset your password.");
 		}
 
+		// Generate new token
 		connectionHandler = authenticationDatabase.getNewConnectionHandler(true);
 		String verificationToken = authenticationDatabase.getVerificationTokenTable()
 				.addNewVerificationTokenForPlayer(connectionHandler, playerAccountData.getPlayerId());
 
+		// Send link to email to reset the player's password
 		try {
 			new ResetPasswordEmailCreator(playerAccountData.getEmail(), verificationToken).sendNewEmail();
 		} catch (EmailException ex) {

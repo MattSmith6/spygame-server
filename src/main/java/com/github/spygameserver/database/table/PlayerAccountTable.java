@@ -110,7 +110,7 @@ public class PlayerAccountTable extends AbstractTable {
         return playerId;
     }
 
-    public void setUpdateDisabledAccount(ConnectionHandler connectionHandler, String username, int playerId) {
+    public void updateDisabledAccount(ConnectionHandler connectionHandler, String username, int playerId) {
         Connection connection = connectionHandler.getConnection();
         String updateDisabledAccountQuery = formatQuery(UPDATE_DISABLED_ACCOUNT);
 

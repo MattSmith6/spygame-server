@@ -17,6 +17,9 @@ import java.util.Random;
 
 import netscape.javascript.JSObject;
 
+/**
+ * A class designed to insert, update, and select data from the game lobby table in the game database.
+ */
 public class GameLobbyTable extends AbstractTable {
 
     private static final TableType TABLE_TYPE = TableType.GAME_LOBBY;

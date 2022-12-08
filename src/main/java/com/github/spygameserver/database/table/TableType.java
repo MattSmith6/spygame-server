@@ -1,5 +1,9 @@
 package com.github.spygameserver.database.table;
 
+/**
+ * The table type used to get the table name, given the globally set variable for when to use test tables.
+ * If useTestTables is true, it appends 'test_' to the table name to not conflict with real production data.
+ */
 public enum TableType {
 
 	GAME_LOBBY,

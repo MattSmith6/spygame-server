@@ -13,6 +13,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * A class designed to insert, update, or select data from the authentication table in the authentication database.
+ */
 public class AuthenticationTable extends AbstractTable {
 
     private static final TableType TABLE_TYPE = TableType.PLAYER_AUTHENTICATION;

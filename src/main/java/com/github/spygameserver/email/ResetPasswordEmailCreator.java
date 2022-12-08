@@ -25,7 +25,7 @@ public class ResetPasswordEmailCreator extends EmailCreator {
 
 	@Override
 	protected String getMessageBody() {
-		String getParameters = StringUtils.join('&', verificationToken, getEncodedPlayerEmail());
+		String getParameters = StringUtils.join('&', "email=" + getEncodedPlayerEmail(), "token=" + getEncodedString(verificationToken));
 		return String.format(HTML_BODY_FORMAT, URL, getParameters);
 	}
 

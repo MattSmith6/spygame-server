@@ -7,8 +7,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-// For now, this class is designed as a way to open up connections. If there is time, this may include a way
-// to open a connection pool, where connections are shared between a certain number of threads
+/**
+ * A class used to create new connections that are pooled by HikariCP. This class must be closed after the program
+ * executes to prevent resources from leaking, as HikariCP pools must be closed internally.
+ */
 public class DatabaseConnectionManager implements AutoCloseable {
 
     private final HikariDataSource hikariDataSource;

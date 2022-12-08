@@ -63,7 +63,11 @@ public abstract class EmailCreator {
 	}
 
 	protected String getEncodedPlayerEmail() {
-		return URLEncoder.encode(getPlayerEmail(), StandardCharsets.UTF_8);
+		return getEncodedString(getPlayerEmail());
+	}
+
+	protected String getEncodedString(String string) {
+		return URLEncoder.encode(string, StandardCharsets.UTF_8);
 	}
 
 	// Heavily pulled from documentation at: https://commons.apache.org/proper/commons-email/userguide.html

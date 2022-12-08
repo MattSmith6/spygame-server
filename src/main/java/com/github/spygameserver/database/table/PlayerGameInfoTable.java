@@ -9,6 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * A class used to insert, update, and select data for the player game info table in the game database.
+ */
 public class PlayerGameInfoTable extends AbstractTable {
 
     private static final TableType TABLE_TYPE = TableType.PLAYER_GAME_INFO;

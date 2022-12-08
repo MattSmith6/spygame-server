@@ -10,6 +10,9 @@ import com.github.spygameserver.player.account.PlayerAccountData;
 import org.json.JSONObject;
 import spark.Response;
 
+/**
+ * The Route that handles actually resetting the player's password once a form has been submitted online.
+ */
 public class ResetPasswordRoute extends TokenRequiredRoute {
 
     public ResetPasswordRoute(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
@@ -29,6 +32,8 @@ public class ResetPasswordRoute extends TokenRequiredRoute {
             return false;
         }
 
+        // Ensure that both the username and password exist
+
         String username = playerAccountData.getUsername();
 
         if (!jsonObject.has("password")) {
@@ -41,6 +46,7 @@ public class ResetPasswordRoute extends TokenRequiredRoute {
             return false;
         }
 
+        // Create a new authentication record and update it in the database
         PlayerAuthenticationData playerAuthenticationData = new PlayerAuthenticationData(playerId, username, password);
 
         connectionHandler = authenticationDatabase.getNewConnectionHandler(true);

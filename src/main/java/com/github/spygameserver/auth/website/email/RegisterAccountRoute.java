@@ -14,8 +14,14 @@ import spark.Response;
 
 import java.util.regex.Pattern;
 
+/**
+ * The Spark Route used to register an account with a CSUN email. Requires
+ */
 public class RegisterAccountRoute extends EmailRequiredRoute {
 
+    /**
+     * Regex pattern allowing for only a-z, A-Z, and 0-9.
+     */
     private static final Pattern VALID_USERNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9]+$");
 
     private final GameDatabase gameDatabase;
@@ -40,11 +46,13 @@ public class RegisterAccountRoute extends EmailRequiredRoute {
 
         String username = jsonObject.getString("username");
 
+        // Several invalid username checks
+
         if (username == null) {
             return getErrorObject("Null username");
         }
 
-        if (username.length() > 16) {
+        if (username.length() < 5 || username.length() > 16) {
             return getErrorObject("Invalid username length");
         }
 
@@ -56,7 +64,7 @@ public class RegisterAccountRoute extends EmailRequiredRoute {
 
         boolean doesUsernameMatchAccount = playerAccountData != null && playerAccountData.getUsername().equals(username);
 
-        // If the account table already exists
+        // If the username already exists and it's not the username for the possibly disabled account, error
         if (playerAccountTable.doesUsernameAlreadyExist(connectionHandler, username) &&
                 (doesUsernameMatchAccount || playerAccountData == null)) {
             return getErrorObject("This username already exists for another account.");
@@ -68,22 +76,21 @@ public class RegisterAccountRoute extends EmailRequiredRoute {
             return getErrorObject("Null password");
         }
 
-        // Add player account to database
         connectionHandler = gameDatabase.getNewConnectionHandler(true);
 
+        // Add player account to database if it doesn't exist, update the disabled account if it does
         int playerId;
         if (playerAccountData == null) {
             playerId = playerAccountTable.createPlayerAccount(connectionHandler, email, username);
         } else {
             playerId = playerAccountData.getPlayerId();
-            playerAccountTable.setUpdateDisabledAccount(connectionHandler, username, playerId);
+            playerAccountTable.updateDisabledAccount(connectionHandler, username, playerId);
         }
 
         PlayerAuthenticationData playerAuthenticationData = new PlayerAuthenticationData(playerId, username, password);
-
-        // Add authentication information to the database
         connectionHandler = authenticationDatabase.getNewConnectionHandler(false);
 
+        // Add the authentication if doesn't exist, or update it for a disabled account
         if (playerAccountData == null) {
             authenticationDatabase.getAuthenticationTable().addPlayerAuthenticationRecord(connectionHandler,
                     playerAuthenticationData);
@@ -92,11 +99,13 @@ public class RegisterAccountRoute extends EmailRequiredRoute {
                     playerAuthenticationData);
         }
 
+        // Gneerate a new token
         String verificationToken = authenticationDatabase.getVerificationTokenTable()
                 .addNewVerificationTokenForPlayer(connectionHandler, playerId);
 
         connectionHandler.closeAbsolutely();
 
+        // Send the email for verification or disabled with the randomly generated token
         try {
             new VerifyOrDisableEmailCreator(email, verificationToken).sendNewEmail();
         } catch (EmailException ex) {

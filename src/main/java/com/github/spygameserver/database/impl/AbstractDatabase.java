@@ -7,6 +7,10 @@ import com.github.spygameserver.database.table.AbstractTable;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * A class that provides common methods for databases: the mass initialization of tables and checks to make sure
+ * they are initialized, a method to provide new ConnectionHandlers, and a way to close the resources to avoid data leaks.
+ */
 public abstract class AbstractDatabase implements AutoCloseable {
 
     protected final DatabaseConnectionManager databaseConnectionManager;

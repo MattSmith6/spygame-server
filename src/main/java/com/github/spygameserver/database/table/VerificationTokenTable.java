@@ -8,6 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * A class designed to insert, update, and select data for the verification token table in the authentication database.
+ */
 public class VerificationTokenTable extends AbstractTable {
 
 	private static final TableType TABLE_TYPE = TableType.VERIFICATION_TOKEN;

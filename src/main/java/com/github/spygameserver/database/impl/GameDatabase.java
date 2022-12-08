@@ -6,8 +6,10 @@ import com.github.spygameserver.database.table.GameLobbyTable;
 import com.github.spygameserver.database.table.PlayerAccountTable;
 import com.github.spygameserver.database.table.PlayerGameInfoTable;
 
-// The game database includes all tables unrelated to authentication:
-// The player's account, player game info, game lobbies, game records, etc.
+/**
+ * A class representing the SQL game database. Includes references to the player account table, game lobby table,
+ * player game info table, and the game records table if implemented by project submission.
+ */
 public class GameDatabase extends AbstractDatabase {
 
     private final PlayerAccountTable playerAccountTable;

@@ -8,6 +8,9 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+/**
+ * A Route that
+ */
 public class CheckUsernameExistsRoute implements Route {
 
     private final GameDatabase gameDatabase;
@@ -28,16 +31,19 @@ public class CheckUsernameExistsRoute implements Route {
         // Put error status temporarily
         statusObject.put("status", "ERROR");
 
+        // If the username is null, return an error
         if (usernameToCheck == null) {
             statusObject.put("error", "Username to check is null.");
             return statusObject.toString();
         }
 
+        // If the username is an invalid length, return an error
         if (usernameToCheck.length() > 16) {
             statusObject.put("error", "Invalid username length.");
             return statusObject.toString();
         }
 
+        // Return a success object with a boolean for whether the username already exists in the database
         statusObject.put("status", "SUCCESS");
         statusObject.put("exists", playerAccountTable.getPlayerIdByUsername(getNewConnection(), usernameToCheck) != null);
 
