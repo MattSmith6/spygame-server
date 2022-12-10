@@ -3,7 +3,6 @@ package com.github.spygameserver.packet.auth;
 import com.github.glusk.caesar.Bytes;
 import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
 import com.github.glusk.srp6_variables.SRP6IntegerVariable;
-import com.github.spygameserver.SpyGameServer;
 import com.github.spygameserver.auth.PlayerEncryptionKey;
 import com.github.spygameserver.auth.ServerAuthenticationHandshake;
 import com.github.spygameserver.database.ConnectionHandler;
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.ByteOrder;
@@ -61,7 +59,7 @@ public class ServerHandshakePacket extends AbstractPacket {
 
         ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
         PlayerVerificationData playerVerificationData = gameDatabase.getPlayerAccountTable()
-                .getPlayerVerificationInfo(connectionHandler, username);
+                .getPlayerVerificationData(connectionHandler, username);
 
         if (playerVerificationData == null) {
             LOGGER.warn("No matching player id, writing bad handshake...");

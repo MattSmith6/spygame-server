@@ -35,13 +35,22 @@ import java.util.Base64;
 
 import static com.github.spygameserver.auth.ServerAuthenticationHandshake.N;
 
+/**
+ * Tests the ServerAuthenticationHandshake and its respective packet simulation using data inserted into the database.
+ * This ensures that the server side component of authentication is working, and that the client side can be
+ * debugged separately without confusion as to which components are broken.
+ *
+ * Uses the library for SRP6-Variables on GitHub to make this process easier.
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
 
+    // Fake credentials to simulate authentication for
     private static final String EMAIL = "alice_fake@my.csun.edu";
     private static final String USERNAME = "alice";
     private static final String PASSWORD = "password123";
 
+    // Convert the username and password into their bytes for the library to use
     private static final Bytes USERNAME_BYTES = new PlainText(USERNAME);
     private static final Bytes PASSWORD_BYTES = new PlainText(PASSWORD);
 
@@ -70,6 +79,7 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
 
         int playerId;
 
+        // Create the player account if it doesn't already exist and fetch the id appropriately
         if (playerAccountData == null) {
             playerId = playerAccountTable.createPlayerAccount(gameConnectionHandler, EMAIL, USERNAME);
         } else {
@@ -81,7 +91,7 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
         AuthenticationTable authenticationTable = authenticationDatabase.getAuthenticationTable();
         ConnectionHandler authConnectionHandler = authenticationDatabase.getNewConnectionHandler(false);
 
-        // If the table our data already exists, we don't need to be here
+        // If the table our data already exists, we don't need to insert the data again
         if (authenticationTable.getPlayerAuthenticationRecord(authConnectionHandler, playerId) != null) {
             authConnectionHandler.closeAbsolutely();
             realPlayerId = playerId;
@@ -89,11 +99,12 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
             return;
         }
 
+        // Create and insert the authentication record into the database
         PlayerAuthenticationData playerAuthenticationData = new PlayerAuthenticationData(playerId,
                 USERNAME, PASSWORD);
-
         authenticationTable.addPlayerAuthenticationRecord(authConnectionHandler, playerAuthenticationData);
 
+        // Create a new connection, get the actual player id, and close the connection
         ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
         realPlayerId = gameDatabase.getPlayerAccountTable().getPlayerIdByUsername(connectionHandler, USERNAME);
 
@@ -102,9 +113,11 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
 
     @Test
     public void testInvalidPlayerIdReceiveHello() {
+        // Feed the handshake object an invalid player id
         ServerAuthenticationHandshake handshake = new ServerAuthenticationHandshake(USERNAME, authenticationDatabase);
         JSONObject responseToPlayerHello = handshake.respondToHello(realPlayerId + 1);
 
+        // Ensure that the handshake object responds with bad_record_mac
         String errorMessage = getErrorMessage(responseToPlayerHello);
         Assertions.assertEquals("bad_record_mac", errorMessage);
     }
@@ -113,8 +126,8 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
     public void testInvalidKeyExchangePlayerReceiveHello() {
         ServerAuthenticationHandshake handshake = new ServerAuthenticationHandshake(USERNAME, authenticationDatabase);
         JSONObject responseToPlayerHello = handshake.respondToHello(realPlayerId);
-        System.out.println(realPlayerId);
 
+        // First step should succeed with the real player id
         if (responseToPlayerHello.has("error")) {
             Assertions.fail(getErrorMessage(responseToPlayerHello));
         }
@@ -123,7 +136,7 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
 
         SRP6IntegerVariable A = clientKeyExchange.A;
 
-        // Modify M1 to create a mismatch from valid generation
+        // Modify M1 to create an invalid M1 variable
         byte[] m1Shenanigans = clientKeyExchange.M1.asArray();
         m1Shenanigans[0] = (byte) (m1Shenanigans[0] - 1);
 
@@ -132,6 +145,7 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
         JSONObject responseToKeyExchange = handshake.respondToKeyExchange(A, M1);
         String error = responseToKeyExchange.getString("error");
 
+        // Check to make sure that the test fails when M1 has been modified
         Assertions.assertEquals("Client proof mismatch!", error);
     }
 
@@ -149,6 +163,7 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
         ServerAuthenticationHandshake handshake = new ServerAuthenticationHandshake(USERNAME, authenticationDatabase);
         JSONObject responseToPlayerHello = handshake.respondToHello(realPlayerId);
 
+        // First step should succeed with the real player id
         if (responseToPlayerHello.has("error")) {
             Assertions.fail(getErrorMessage(responseToPlayerHello));
         }
@@ -158,15 +173,17 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
         SRP6IntegerVariable A = clientKeyExchange.A;
         Bytes M1 = clientKeyExchange.M1;
 
+        // Get the response to the key exchange from the server
         JSONObject responseToKeyExchange = handshake.respondToKeyExchange(A, M1);
 
+        // If the key exchange has an error, this is not a valid login
         if (responseToKeyExchange.has("error")) {
             Assertions.fail(getErrorMessage(responseToKeyExchange));
         }
 
         Bytes M2 = getBytesFromJSON(responseToKeyExchange, "M2");
 
-        // Verify that M1 proof matches M2 proof
+        // Verify that M1 proof matches M2 proof, last step of SRP-6
         try {
             Bytes cM2 = new SRP6ServerSessionProof(ServerAuthenticationHandshake.IMD, N, A, M1, clientKeyExchange.K,
                     ByteOrder.BIG_ENDIAN);
@@ -176,8 +193,15 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
         } catch (SRP6Exception e) {
             Assertions.fail("Server proof mismatch!");
         }
+
+        // If we have made it here, the proof messages and premaster secret are correct, this is a pass
     }
 
+    /**
+     * Generates the client key exchange. This simulates the player attempting to login to the server.
+     * @param responseToPlayerHello the response object needed to generate the client key exchange
+     * @return the ClientKeyExchange object containing variables necessary for the next step
+     */
     private ClientKeyExchange generateClientKeyExchange(JSONObject responseToPlayerHello) {
         SecureRandom rng = new SecureRandom();
         ImmutableMessageDigest IMD = ServerAuthenticationHandshake.IMD;
