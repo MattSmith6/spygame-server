@@ -14,9 +14,11 @@ import java.util.Properties;
 
 public abstract class EmailCreator {
 
+	// The format for these email, "Hey <name>, \n\n <message body>"
 	private static final String EMAIL_FORMAT = "Hey %s,\n\n" +
 			"%s";
 
+	// The resource that holds the gmail credentials used to email players: email and password
 	private static final String RESOURCE_NAME = "gmail_credentials.properties";
 
 	private final String serverEmail;
@@ -34,6 +36,7 @@ public abstract class EmailCreator {
 	}
 
 	private void initializeMailCap() {
+		// The following resource was used to set the
 		// https://stackoverflow.com/questions/21856211/javax-activation-unsupporteddatatypeexception-no-object-dch-for-mime-type-multi
 		MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
 		mc.addMailcap("text/html;; x-java-content-handler=com.sun.mail.handlers.text_html");
@@ -43,6 +46,10 @@ public abstract class EmailCreator {
 		mc.addMailcap("message/rfc822;; x-java-content- handler=com.sun.mail.handlers.message_rfc822");
 	}
 
+	/**
+	 *
+	 * @return
+	 */
 	private Properties getGmailCredentials() {
 		Properties properties = new Properties();
 
@@ -63,26 +70,36 @@ public abstract class EmailCreator {
 	}
 
 	protected String getEncodedPlayerEmail() {
-		return URLEncoder.encode(getPlayerEmail(), StandardCharsets.UTF_8);
+		return getEncodedString(getPlayerEmail());
+	}
+
+	// Escape necessary characters (like the @ symbol) by encoding a string to UTF-8
+	protected String getEncodedString(String string) {
+		return URLEncoder.encode(string, StandardCharsets.UTF_8);
 	}
 
 	// Heavily pulled from documentation at: https://commons.apache.org/proper/commons-email/userguide.html
 	public void sendNewEmail() throws EmailException {
 		HtmlEmail htmlEmail = new HtmlEmail();
 
+		// Setup google host, port, authentication, and SSL
 		htmlEmail.setHostName("smtp.googlemail.com");
 		htmlEmail.setSmtpPort(465);
-
 		htmlEmail.setAuthenticator(new DefaultAuthenticator(serverEmail, password));
 		htmlEmail.setSSLOnConnect(true);
 
+		// Set the from as the server email, the to as the player email
 		htmlEmail.setFrom(serverEmail);
 		htmlEmail.addTo(playerEmail);
 
+		// Set the subject message and body of the email to be the information defined in the subclass
 		htmlEmail.setSubject(getSubjectMessage());
 		htmlEmail.setTextMsg(getMessage());
 
-		Thread.currentThread().setContextClassLoader( getClass().getClassLoader() );
+		// Fix errors with SMTP, by setting the context class loader
+		Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+
+		// Send the email
 		htmlEmail.send();
 	}
 
@@ -90,6 +107,11 @@ public abstract class EmailCreator {
 		return String.format(EMAIL_FORMAT, getPlayerFirstName(), getMessageBody());
 	}
 
+	/**
+	 * Gets the first name of a player (for CSUN emails, this is separated by the first . character).
+	 * If there is no . character in the email, return the name of the email address (before the @ character).
+	 * @return the first name, or email of the character if the first name is not accessible
+	 */
 	protected String getPlayerFirstName() {
 		// This should never occur for a CSUN email address, but this might occur for a test email
 		if (!playerEmail.contains(".")) {
@@ -100,8 +122,16 @@ public abstract class EmailCreator {
 		return Character.toUpperCase(lowercaseFirstName.charAt(0)) + lowercaseFirstName.substring(1);
 	}
 
+	/**
+	 * Gets the subject of the email for the specific subclass
+	 * @return the subject of the email for the specific subclass
+	 */
 	protected abstract String getSubjectMessage();
 
+	/**
+	 * Gets the body of the email, outside of the hello header, for the specific subclass
+	 * @return the body of the email, outside of the hello header, for the specific subclass
+	 */
 	protected abstract String getMessageBody();
 
 }

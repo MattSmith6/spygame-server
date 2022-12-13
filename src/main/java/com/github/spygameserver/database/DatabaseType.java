@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * An enum that represents the different types of database types for the project. Includes references to the
+ * resource file names for constant access and a method to load the properties file for the given resource.
+ */
 public enum DatabaseType {
 
 	GAME("game_db.properties"),
@@ -17,6 +21,10 @@ public enum DatabaseType {
 		this.propertiesFileName = propertiesFileName;
 	}
 
+	/**
+	 * Gets the properties file that has the HikariCP connection pooling configuration
+	 * @return the properites file that has the HikariCP connection pooling configuration
+	 */
 	public Properties getHikariProperties() {
 		Properties properties = new Properties();
 

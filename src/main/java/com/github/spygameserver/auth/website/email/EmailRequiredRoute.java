@@ -8,6 +8,9 @@ import spark.Route;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * The abstract version of a
+ */
 public abstract class EmailRequiredRoute implements Route {
 
     private final String STATUS_FIELD = "status";
@@ -24,6 +27,11 @@ public abstract class EmailRequiredRoute implements Route {
         return handleAdditional(jsonObject, getEmail(jsonObject), response);
     }
 
+    /**
+     * Parse the request body into JSON, decoding any special characters escaped in the URL
+     * @param body the body of the HTTP POST request
+     * @return the representation of the POST parameters in a JSONObject
+     */
     private JSONObject parseRequestIntoJSON(String body) {
         JSONObject jsonObject = new JSONObject();
 
@@ -39,6 +47,13 @@ public abstract class EmailRequiredRoute implements Route {
         return jsonObject;
     }
 
+    /**
+     * The method to be implemented by subclasses to handle additional features outside of checking email validity.
+     * @param jsonObject the HTTP POST request parameters in the form of a JSONObject
+     * @param email the email that is already checked to match a valid CSUN domain
+     * @param response the response object used by Spark to return errors or append results
+     * @return the JSONObject to send to the response object after handling additional features
+     */
     public abstract JSONObject handleAdditional(JSONObject jsonObject, String email, Response response);
 
     protected String getEmail(JSONObject jsonObject) {

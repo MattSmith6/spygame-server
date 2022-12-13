@@ -10,6 +10,12 @@ import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.impl.GameDatabase;
 import spark.Spark;
 
+/**
+ * A class that handles the generation of the website using the Spark java library.
+ * In Spark, a Route is when a user connects to a URL at a certain specified path (e.g. account/email/verify).
+ * The implementations of Route are mapped to their respective paths, as these features do not require credential verification.
+ * Therefore, these services were moved to a website instead of packets, as that way email links can be sent easily.
+ */
 public class SparkWebsiteHandler {
 
     public SparkWebsiteHandler(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
@@ -19,6 +25,8 @@ public class SparkWebsiteHandler {
     private void setupVerifyEmailPostRequest(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
         Spark.port(80);
 
+        // Set all files under the public folder, in resources, to be publicly available as a file on the web server
+        // This is used for the resetPassword.html file (form input), which redirects into the doReset post request
         Spark.staticFileLocation("/public");
 
         Spark.path("/account", () -> {
@@ -33,7 +41,7 @@ public class SparkWebsiteHandler {
 
             Spark.path("/username", () -> {
                     // Gets the username for the specified account (forgot username), for a given email
-                    Spark.post("/request", new RequestAccountUsernameRoute(gameDatabase));
+                    Spark.get("/request", new RequestAccountUsernameRoute(gameDatabase));
 
                     // Checks if the username already exists (used when looking at the form)
                     Spark.get("/check/:username", new CheckUsernameExistsRoute(gameDatabase));

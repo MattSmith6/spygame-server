@@ -7,6 +7,10 @@ import com.github.spygameserver.database.table.AbstractTable;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * A class that provides common methods for databases: the mass initialization of tables and checks to make sure
+ * they are initialized, a method to provide new ConnectionHandlers, and a way to close the resources to avoid data leaks.
+ */
 public abstract class AbstractDatabase implements AutoCloseable {
 
     protected final DatabaseConnectionManager databaseConnectionManager;
@@ -30,6 +34,9 @@ public abstract class AbstractDatabase implements AutoCloseable {
         this.isInitialized = true;
     }
 
+    /**
+     * Throws an exception if the tables are uninitialized in this database (the tables have not attempted to be created).
+     */
     protected void throwExceptionIfUninitialized() {
         if (!isInitialized) {
             throw new IllegalStateException("Database is not initialized. Call the initialize method in the constructor "
@@ -37,6 +44,13 @@ public abstract class AbstractDatabase implements AutoCloseable {
         }
     }
 
+    /**
+     * Method used internally to obtain a database connection to initialize the tables. Will not produce an internal
+     * state exception because this method should only be used once, to initialize the tables for the databases.
+     *
+     * @param shouldCloseConnectionAfterUsed whether the connection should close after use, used internally by table
+     * @return a new ConnectionHandler, holding a reference to a database's connection
+     */
     private ConnectionHandler getUncheckedConnectionHandler(boolean shouldCloseConnectionAfterUsed) {
         try {
             Connection connection = databaseConnectionManager.createNewConnection();
@@ -48,6 +62,13 @@ public abstract class AbstractDatabase implements AutoCloseable {
         return null;
     }
 
+    /**
+     * Creates a new ConnectionHandler. Will throw an internal state exception if the developer forgot to initialize
+     * the database's tables before trying to create a connection.
+     *
+     * @param shouldCloseConnectionAfterUsed whether the connection should close after use, used internally by tables
+     * @return a new ConnectionHandler, holding a reference to a database's connection
+     */
     public ConnectionHandler getNewConnectionHandler(boolean shouldCloseConnectionAfterUsed) {
         throwExceptionIfUninitialized();
 

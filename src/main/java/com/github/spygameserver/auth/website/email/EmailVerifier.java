@@ -2,6 +2,9 @@ package com.github.spygameserver.auth.website.email;
 
 import org.json.JSONObject;
 
+/**
+ * A class used to verify that the provided email is from CSUN. Methods should be explanatory based on object names.
+ */
 public class EmailVerifier {
 
     public static boolean isEmailFromCSUN(JSONObject jsonObject) {

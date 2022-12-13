@@ -7,6 +7,9 @@ import com.github.spygameserver.player.account.AccountVerificationStatus;
 import org.json.JSONObject;
 import spark.Response;
 
+/**
+ * A Route that requires a token to be used whose only purpose is to update the verification status to 'VERIFIED'.
+ */
 public class VerifyEmailAccountRoute extends UpdateVerificationStatusTokenRoute {
 
 	public VerifyEmailAccountRoute(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {

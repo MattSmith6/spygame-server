@@ -2,6 +2,12 @@ package com.github.spygameserver.email;
 
 import com.github.spygameserver.util.StringUtils;
 
+/**
+ * Sends an email to the player with a link to reset their password. The link redirects to the resetPassword.html,
+ * which validates the normal password and the confirmed password match before sending a post request to the
+ * account/reset/doReset path to update the player's account credentials. More information can be found in the
+ *
+ */
 public class ResetPasswordEmailCreator extends EmailCreator {
 
 	private static final String SUBJECT_MESSAGE = "Spy Game - Password Reset";
@@ -25,7 +31,11 @@ public class ResetPasswordEmailCreator extends EmailCreator {
 
 	@Override
 	protected String getMessageBody() {
-		String getParameters = StringUtils.join('&', verificationToken, getEncodedPlayerEmail());
+		// The GET HTTP request parameters for this URL: email=<encoded email>&token=<encoded token> parameters
+		String getParameters = StringUtils.join('&', "email=" + getEncodedPlayerEmail(),
+				"token=" + getEncodedString(verificationToken));
+
+		// Return the formatted body of the email, which includes the URL?getParameters
 		return String.format(HTML_BODY_FORMAT, URL, getParameters);
 	}
 

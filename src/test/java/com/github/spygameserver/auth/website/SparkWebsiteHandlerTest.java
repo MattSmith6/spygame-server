@@ -5,7 +5,7 @@ import com.github.spygameserver.auth.PlayerAuthenticationData;
 import com.github.spygameserver.database.ConnectionHandler;
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.impl.GameDatabase;
-import com.github.spygameserver.database.table.AuthenticationTable;
+import com.github.spygameserver.database.table.PlayerAuthenticationTable;
 import com.github.spygameserver.database.table.PlayerAccountTable;
 import com.github.spygameserver.player.account.AccountVerificationStatus;
 import com.github.spygameserver.player.account.PlayerAccountData;
@@ -38,19 +38,17 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /**
- * After reassessing the requirements for verification, using a normal email service with verification tokens is easier than Google integration.
- * Ensuring that these tests pass before implementation of the app, lets us know that any errors encountered are a result
- * of code
+ *
+ * NOTE: These tests are disabled as they were designed for the earlier Google sign-in method that was not implemented.
+ * These tests will not pass successfully now, as routes have been modified and post/get requests change to allow
+ * for implementation in the email servers.
  *
  * This test is designed to test the functionality of all the spark handler subprocesses:
  * 1. Creating an account using a unique CSUN email and username
  * 2. Recovering lost username, by email request
- * 3. Sending
  * 2. Resetting password, with token (the web process POST request)
  * 3. Disabling account, with token (the web process POST request)
  * 4. Check username exists (for account screen integration)
- *
- * This test does not check for
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -73,7 +71,7 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
     private AuthenticationDatabase authenticationDatabase;
 
     private PlayerAccountTable playerAccountTable;
-    private AuthenticationTable authenticationTable;
+    private PlayerAuthenticationTable authenticationTable;
 
     private SparkWebsiteHandler sparkWebsiteHandler;
 

@@ -110,7 +110,7 @@ public class PlayerAccountTable extends AbstractTable {
         return playerId;
     }
 
-    public void setUpdateDisabledAccount(ConnectionHandler connectionHandler, String username, int playerId) {
+    public void updateDisabledAccount(ConnectionHandler connectionHandler, String username, int playerId) {
         Connection connection = connectionHandler.getConnection();
         String updateDisabledAccountQuery = formatQuery(UPDATE_DISABLED_ACCOUNT);
 
@@ -207,7 +207,7 @@ public class PlayerAccountTable extends AbstractTable {
         return playerId;
     }
 
-    public PlayerVerificationData getPlayerVerificationInfo(ConnectionHandler connectionHandler, String username) {
+    public PlayerVerificationData getPlayerVerificationData(ConnectionHandler connectionHandler, String username) {
         Connection connection = connectionHandler.getConnection();
         String playerVerificationDataQuery = formatQuery(PLAYER_VERIFICATION_DATA_QUERY);
 

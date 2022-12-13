@@ -3,7 +3,6 @@ package com.github.spygameserver.packet.auth;
 import com.github.glusk.caesar.Bytes;
 import com.github.glusk.srp6_variables.SRP6CustomIntegerVariable;
 import com.github.glusk.srp6_variables.SRP6IntegerVariable;
-import com.github.spygameserver.SpyGameServer;
 import com.github.spygameserver.auth.PlayerEncryptionKey;
 import com.github.spygameserver.auth.ServerAuthenticationHandshake;
 import com.github.spygameserver.database.ConnectionHandler;
@@ -20,12 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.ByteOrder;
 import java.util.Base64;
 
+/**
+ * The packet that handles the authentication handshake between the player and the server.
+ */
 public class ServerHandshakePacket extends AbstractPacket {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerPacketReader.class);
@@ -42,6 +43,7 @@ public class ServerHandshakePacket extends AbstractPacket {
         LOGGER.info("Trying to read first unencrypted object...");
         JSONObject usernamePacket = readUnencryptedObjectFromInput(bufferedReader);
 
+        // Username sanity checks to ensure correct packet communication
         if (usernamePacket == null || !usernamePacket.has("I")) {
             LOGGER.warn("No username packet, writing bad handshake error");
             writeErrorObject(printWriter, "Bad handshake, no username object found");
@@ -50,6 +52,7 @@ public class ServerHandshakePacket extends AbstractPacket {
 
         String username = usernamePacket.getString("I");
 
+        // Ensure that the username isn't null
         if (username == null) {
             LOGGER.warn("No I in username object, writing bad handshake...");
             writeErrorObject(printWriter, "Bad handshake, I is null in username object");
@@ -59,16 +62,19 @@ public class ServerHandshakePacket extends AbstractPacket {
         GameDatabase gameDatabase = packetManager.getGameDatabase();
         AuthenticationDatabase authenticationDatabase = packetManager.getAuthenticationDatabase();
 
+        // Obtain player verification data from the username
         ConnectionHandler connectionHandler = gameDatabase.getNewConnectionHandler(true);
         PlayerVerificationData playerVerificationData = gameDatabase.getPlayerAccountTable()
-                .getPlayerVerificationInfo(connectionHandler, username);
+                .getPlayerVerificationData(connectionHandler, username);
 
+        // Ensure that the account exists
         if (playerVerificationData == null) {
             LOGGER.warn("No matching player id, writing bad handshake...");
             writeErrorObject(printWriter, "bad_record_mac");
             return false;
         }
 
+        // Ensure that the account is verified before attempting to login
         if (playerVerificationData.getAccountVerificationStatus() != AccountVerificationStatus.VERIFIED) {
             LOGGER.warn("Account not verified, writing bad handshake...");
             writeErrorObject(printWriter, "bad_record_mac");
@@ -77,6 +83,7 @@ public class ServerHandshakePacket extends AbstractPacket {
 
         int playerId = playerVerificationData.getPlayerId();
 
+        // Create the authentication object to feed the player id for the account
         ServerAuthenticationHandshake handshake = new ServerAuthenticationHandshake(username, authenticationDatabase);
         JSONObject responseToPlayerHello = handshake.respondToHello(playerId);
 
@@ -110,6 +117,7 @@ public class ServerHandshakePacket extends AbstractPacket {
             return false;
         }
 
+        // Get the response variables out of the key exchange object sent by the player
         SRP6IntegerVariable A = new SRP6CustomIntegerVariable(getDecodedBytes(keyExchangeObject, "A"), ByteOrder.BIG_ENDIAN);
         Bytes M1 = getDecodedBytes(keyExchangeObject, "M1");
 

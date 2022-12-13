@@ -13,6 +13,9 @@ import spark.Route;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * A Route that requires a valid verification token as one of the parameters in the GET/POST request.
+ */
 public abstract class TokenRequiredRoute implements Route {
 
 	private static final int ERROR_STATUS = 400;
@@ -38,6 +41,7 @@ public abstract class TokenRequiredRoute implements Route {
 
 		String token = jsonObject.getString("token");
 
+		// Ensure that the token isn't invalid to start
 		if (token.length() != VerificationTokenTable.TOKEN_LENGTH) {
 			setErrorStatus(response);
 			return null;
@@ -55,6 +59,7 @@ public abstract class TokenRequiredRoute implements Route {
 
 		Integer playerId = verificationTokenTable.getPlayerIdFromVerificationToken(connectionHandler, token);
 
+		// If the player id is null, the token didn't exist in the database
 		if (playerId == null) {
 			setErrorStatus(response);
 			return null;
@@ -79,12 +84,15 @@ public abstract class TokenRequiredRoute implements Route {
 		connectionHandler = authenticationDatabase.getNewConnectionHandler(true);
 		verificationTokenTable.deleteVerificationToken(connectionHandler, token);
 
-
-
 		// Return the success message to the player
 		return getSuccessMessage();
 	}
 
+	/**
+	 * Parse the POST parameters into a JSONObject
+	 * @param body the body of the POST request that has the parameters
+	 * @return the parameters in the form of a JSONObject
+	 */
 	private JSONObject parseRequestIntoJSON(String body) {
 		JSONObject jsonObject = new JSONObject();
 
@@ -100,6 +108,11 @@ public abstract class TokenRequiredRoute implements Route {
 		return jsonObject;
 	}
 
+	/**
+	 * Parse the Spark Request (for a GET request) into a JSONObject
+	 * @param request the Spark Request object
+	 * @return the parameters in the form of a JSONObject
+	 */
 	private JSONObject parseRequestIntoJSON(Request request) {
 		JSONObject jsonObject = new JSONObject();
 
@@ -110,6 +123,12 @@ public abstract class TokenRequiredRoute implements Route {
 		return jsonObject;
 	}
 
+	/**
+	 * The method used by the subclass to process the token once it is verified.
+	 * @param jsonObject the JSONObject that contains the parameters for this request
+	 * @param playerId the id for the player that submitted this request
+	 * @return true if the token was processed correctly, false if there was an error
+	 */
 	protected abstract boolean processToken(JSONObject jsonObject, int playerId);
 
 	private void setErrorStatus(Response response) {

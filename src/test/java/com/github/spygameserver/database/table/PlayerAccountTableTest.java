@@ -12,6 +12,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+/**
+ * Tests all paths associated with the PlayerAccountTable. Ensures that SQL
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class PlayerAccountTableTest implements DatabaseRequiredTest {
 
@@ -25,6 +28,9 @@ public class PlayerAccountTableTest implements DatabaseRequiredTest {
     private PlayerAccountTable playerAccountTable;
     private ConnectionHandler connectionHandler;
 
+    /**
+     * Setup a connection to the databases for this test.
+     */
     @BeforeAll
     public void setupConnection() {
         gameDatabase = getGameDatabase();
@@ -32,22 +38,22 @@ public class PlayerAccountTableTest implements DatabaseRequiredTest {
         playerAccountTable = gameDatabase.getPlayerAccountTable();
         connectionHandler = gameDatabase.getNewConnectionHandler(false);
 
-        playerAccountTable.initialize(connectionHandler);
+        insertTestDataIfNotExists();
     }
 
-    @Test
-    public void testAllPaths() {
+    public void insertTestDataIfNotExists() {
+        // If the test data does not already exist, insert it into the database
         if (!playerAccountTable.doesEmailAlreadyExist(connectionHandler, TEST_VALID_EMAIL)) {
             playerAccountTable.createPlayerAccount(connectionHandler, TEST_VALID_EMAIL, TEST_VALID_USERNAME);
         }
-
-        checkValidAndInvalidUsernamesAfterInsert();
-        checkAccountDataAfterUsernameFinished();
-
-        checkAllDataMatchesWithEachOther();
     }
 
-    private void checkValidAndInvalidUsernamesAfterInsert() {
+    /**
+     * Check to see if the doesUsernameAlreadyExist function work for both a valid and invalid username.
+     */
+    @Test
+    public void checkValidAndInvalidUsernamesAfterInsert() {
+        // Check if
         boolean hasValidUsernameInserted = playerAccountTable.doesUsernameAlreadyExist(connectionHandler,
                 TEST_VALID_USERNAME);
         boolean hasInvalidUsernameInserted = playerAccountTable.doesUsernameAlreadyExist(connectionHandler,
@@ -57,7 +63,25 @@ public class PlayerAccountTableTest implements DatabaseRequiredTest {
         Assertions.assertFalse(hasInvalidUsernameInserted);
     }
 
-    private void checkAccountDataAfterUsernameFinished() {
+    /**
+     * Check to see if the doesEmailAlreadyExist function work for both a valid and invalid email.
+     */
+    @Test
+    public void checkValidAndInvalidEmailsAfterInsert() {
+        boolean hasValidEmailInserted = playerAccountTable.doesEmailAlreadyExist(connectionHandler,
+                TEST_VALID_EMAIL);
+        boolean hasInvalidEmailInserted = playerAccountTable.doesEmailAlreadyExist(connectionHandler,
+                TEST_INVALID_EMAIL);
+
+        Assertions.assertTrue(hasValidEmailInserted);
+        Assertions.assertFalse(hasInvalidEmailInserted);
+    }
+
+    /**
+     * Checks to see that the data for an account was entered correctly in the database.
+     */
+    @Test
+    public void checkAccountDataValidity() {
         PlayerAccountData playerAccountData = playerAccountTable.getPlayerAccountDataByEmail(connectionHandler,
                 TEST_VALID_EMAIL);
 
@@ -72,7 +96,11 @@ public class PlayerAccountTableTest implements DatabaseRequiredTest {
                 "Account status is not AWAITING_VERIFICATION after account created");
     }
 
-    private void checkAllDataMatchesWithEachOther() {
+    /**
+     * Checks to see that multiple functions, when returning subsets of the account data, match the expected data.
+     */
+    @Test
+    public void checkAllDataMatchesWithEachOther() {
         PlayerAccountData playerAccountDataByEmail = playerAccountTable.getPlayerAccountDataByEmail(connectionHandler,
                 TEST_VALID_EMAIL);
 
@@ -84,7 +112,7 @@ public class PlayerAccountTableTest implements DatabaseRequiredTest {
 
         PlayerVerificationData verificationDataFromAccountData = new PlayerVerificationData(playerId,
                 playerAccountDataByEmail.getAccountVerificationStatus());
-        PlayerVerificationData verificationDataFromTable = playerAccountTable.getPlayerVerificationInfo(connectionHandler,
+        PlayerVerificationData verificationDataFromTable = playerAccountTable.getPlayerVerificationData(connectionHandler,
                 TEST_VALID_USERNAME);
 
         Assertions.assertEquals(verificationDataFromAccountData, verificationDataFromTable,

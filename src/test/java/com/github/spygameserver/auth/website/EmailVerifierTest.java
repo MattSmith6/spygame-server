@@ -4,6 +4,10 @@ import com.github.spygameserver.auth.website.email.EmailVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Checks that valid domain names (csun.edu and my.csun.edu) are accepted as valid.
+ * Also checks that invalid domain names (not the above) are not valid.
+ */
 public class EmailVerifierTest {
 
     private static final String INVALID_EMAIL = "bob@gmail.com";

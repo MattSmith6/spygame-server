@@ -2,6 +2,9 @@ package com.github.spygameserver.player.account;
 
 import java.util.Objects;
 
+/**
+ * Represents a row returned by the PlayerAccountTable, which includes the player id, email, username, and status.
+ */
 public class PlayerAccountData {
 
     private final int playerId;
