@@ -11,6 +11,10 @@ import com.github.glusk.srp6_variables.SRP6Verifier;
 import java.nio.ByteOrder;
 import java.security.SecureRandom;
 
+/**
+ * Represents the data that is inserted into or retrieved from the PlayerAuthenticationTable. Includes references
+ * to a player id, a salt, and a verifier. The salt and verifier are used as SRP-6 variables for authentication.
+ */
 public class PlayerAuthenticationData {
 
     private final int playerId;
@@ -23,6 +27,12 @@ public class PlayerAuthenticationData {
         this.verifier = verifier;
     }
 
+    /**
+     * The constructor to generate the necessary SRP-6 variables (salt and verifier) from a provided username and password
+     * @param playerId the player id
+     * @param username the username
+     * @param password the password
+     */
     public PlayerAuthenticationData(int playerId, String username, String password) {
         this.playerId = playerId;
 
@@ -30,6 +40,8 @@ public class PlayerAuthenticationData {
         PlainText P = new PlainText(password);
 
         SecureRandom rng = new SecureRandom();
+
+        // Setup the randomly generated salt, s, and the verifier from the login credentials, v
         Bytes s = Bytes.wrapped(rng.generateSeed(32));
 
         SRP6IntegerVariable x = new SRP6PrivateKey(ServerAuthenticationHandshake.IMD, s, I, P,
@@ -46,10 +58,6 @@ public class PlayerAuthenticationData {
 
     public Bytes getSalt() {
         return salt;
-    }
-
-    public byte[] getSaltByteArray() {
-        return salt.asArray();
     }
 
     public SRP6IntegerVariable getVerifier() {

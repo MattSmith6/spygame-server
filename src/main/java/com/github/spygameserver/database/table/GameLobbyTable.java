@@ -142,9 +142,13 @@ public class GameLobbyTable extends AbstractTable {
         Connection connection = connectionHandler.getConnection();
         String insertIntoQuery = formatQuery(INSERT_INTO_QUERY);
 
+        // Create the randomly generated invite code, ensuring it doesn't already exist in the database
         String inviteCode = generateInviteCode(connectionHandler);
 
+        int gameId = -1;
+
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertIntoQuery, Statement.RETURN_GENERATED_KEYS)) {
+            // Set the parameters for the insert into query
             preparedStatement.setString(1, inviteCode);
             preparedStatement.setInt(2, is_public);
             preparedStatement.setInt(3, game_type);
@@ -152,19 +156,21 @@ public class GameLobbyTable extends AbstractTable {
             preparedStatement.setString(5, gameName);
             preparedStatement.setInt(6, 0);
 
+            // Execute the statement and get the result set, with the generated key (the game id)
             preparedStatement.executeUpdate();
 
-            ResultSet resultSet = preparedStatement.getGeneratedKeys();
-            if(resultSet.next()) {
-                return resultSet.getInt(1);
+            // Get the game id
+            try (ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
+                if (resultSet.next()) {
+                    gameId = resultSet.getInt(1);
+                }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
         connectionHandler.closeConnectionIfNecessary();
-
-        return -1;
+        return gameId;
     }
 
     public int getCurrentPlayers(ConnectionHandler connectionHandler, int gameID) {
@@ -174,6 +180,7 @@ public class GameLobbyTable extends AbstractTable {
         int currentPlayers = -1;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(selectOneQuery)) {
+            // Set the parameters for the get current players
             preparedStatement.setInt(1, gameID);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -197,10 +204,11 @@ public class GameLobbyTable extends AbstractTable {
         int maxPlayers = -1;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(selectOneQuery)) {
+            // Set the parameters
             preparedStatement.setInt(1, gameID);
 
+            // If there is a result, then this property does exist
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                // If there is a result, then this property does exist
                 if (resultSet.next()) {
                     maxPlayers = resultSet.getInt(1);
                 }
@@ -209,7 +217,7 @@ public class GameLobbyTable extends AbstractTable {
             ex.printStackTrace();
         }
 
-        if(maxPlayers == currentPlayers) {
+        if (maxPlayers == currentPlayers) {
             updateStartTime(connectionHandler, gameID);
 
             //Maybe do something here?
@@ -223,16 +231,17 @@ public class GameLobbyTable extends AbstractTable {
         String updateUsernameQuery = formatQuery(UPDATE_CURRENT_PLAYERS_QUERY);
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameQuery)) {
+            // Set the parameters
             preparedStatement.setInt(1, currentPlayers);
             preparedStatement.setInt(2, gameID);
 
+            // Execute the update in the database
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
         checkToStartGame(connectionHandler, currentPlayers, gameID);
-
         connectionHandler.closeConnectionIfNecessary();
     }
 
@@ -243,9 +252,11 @@ public class GameLobbyTable extends AbstractTable {
         long startTime = System.currentTimeMillis();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameQuery)) {
+            // Set the parameters
             preparedStatement.setLong(1, startTime);
             preparedStatement.setInt(2, gameID);
 
+            // Execute the update in the database
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -261,9 +272,11 @@ public class GameLobbyTable extends AbstractTable {
         long endTime = System.currentTimeMillis();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateUsernameQuery)) {
+            // Set the parameters
             preparedStatement.setLong(1, endTime);
             preparedStatement.setInt(2, gameID);
 
+            // Execute the update in the database
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -279,11 +292,13 @@ public class GameLobbyTable extends AbstractTable {
         game shownGame = new game();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(selectOneQuery)) {
+            // Set the parameters
             preparedStatement.setString(1, inviteCode);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 // If there is a result, then this property does exist
                 if (resultSet.next()) {
+                    // Set the game's properties based on the returned results
                     shownGame.gameID = resultSet.getInt(1);
                     shownGame.inviteCode = resultSet.getString(2);
                     shownGame.isPublic = resultSet.getInt(3);
@@ -314,6 +329,7 @@ public class GameLobbyTable extends AbstractTable {
         String inviteCode = null;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(selectOneQuery)) {
+            // Set the parameters for this query
             preparedStatement.setInt(1, gameID);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {

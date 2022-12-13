@@ -19,7 +19,7 @@ import com.github.spygameserver.DatabaseRequiredTest;
 import com.github.spygameserver.database.ConnectionHandler;
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.impl.GameDatabase;
-import com.github.spygameserver.database.table.AuthenticationTable;
+import com.github.spygameserver.database.table.PlayerAuthenticationTable;
 import com.github.spygameserver.database.table.PlayerAccountTable;
 import com.github.spygameserver.player.account.PlayerAccountData;
 import org.json.JSONObject;
@@ -88,7 +88,7 @@ public class ServerAuthenticationHandshakeTest implements DatabaseRequiredTest {
 
         gameConnectionHandler.closeAbsolutely();
 
-        AuthenticationTable authenticationTable = authenticationDatabase.getAuthenticationTable();
+        PlayerAuthenticationTable authenticationTable = authenticationDatabase.getAuthenticationTable();
         ConnectionHandler authConnectionHandler = authenticationDatabase.getNewConnectionHandler(false);
 
         // If the table our data already exists, we don't need to insert the data again

@@ -1,7 +1,7 @@
 package com.github.spygameserver.database.impl;
 
 import com.github.spygameserver.database.DatabaseConnectionManager;
-import com.github.spygameserver.database.table.AuthenticationTable;
+import com.github.spygameserver.database.table.PlayerAuthenticationTable;
 import com.github.spygameserver.database.table.VerificationTokenTable;
 
 /**
@@ -10,19 +10,19 @@ import com.github.spygameserver.database.table.VerificationTokenTable;
  */
 public class AuthenticationDatabase extends AbstractDatabase {
 
-    private final AuthenticationTable authenticationTable;
+    private final PlayerAuthenticationTable authenticationTable;
     private final VerificationTokenTable verificationTokenTable;
 
     public AuthenticationDatabase(DatabaseConnectionManager databaseConnectionManager) {
         super(databaseConnectionManager);
 
-        this.authenticationTable = new AuthenticationTable();
+        this.authenticationTable = new PlayerAuthenticationTable();
         this.verificationTokenTable = new VerificationTokenTable();
 
         initialize(authenticationTable, verificationTokenTable);
     }
 
-    public AuthenticationTable getAuthenticationTable() {
+    public PlayerAuthenticationTable getAuthenticationTable() {
         return authenticationTable;
     }
 

@@ -21,6 +21,10 @@ public enum DatabaseType {
 		this.propertiesFileName = propertiesFileName;
 	}
 
+	/**
+	 * Gets the properties file that has the HikariCP connection pooling configuration
+	 * @return the properites file that has the HikariCP connection pooling configuration
+	 */
 	public Properties getHikariProperties() {
 		Properties properties = new Properties();
 

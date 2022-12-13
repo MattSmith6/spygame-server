@@ -6,7 +6,6 @@ import com.github.glusk.srp6_variables.SRP6IntegerVariable;
 import com.github.spygameserver.auth.PlayerAuthenticationData;
 import com.github.spygameserver.database.ConnectionHandler;
 
-import java.math.BigInteger;
 import java.nio.ByteOrder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,7 +15,7 @@ import java.sql.SQLException;
 /**
  * A class designed to insert, update, or select data from the authentication table in the authentication database.
  */
-public class AuthenticationTable extends AbstractTable {
+public class PlayerAuthenticationTable extends AbstractTable {
 
     private static final TableType TABLE_TYPE = TableType.PLAYER_AUTHENTICATION;
 
@@ -27,7 +26,7 @@ public class AuthenticationTable extends AbstractTable {
     private static final String UPDATE_QUERY = "UPDATE %s SET salt=?, verifier=? WHERE player_id=?";
     private static final String SELECT_QUERY = "SELECT salt, verifier FROM %s WHERE player_id=?";
 
-    public AuthenticationTable() {
+    public PlayerAuthenticationTable() {
         super(TABLE_TYPE);
     }
 

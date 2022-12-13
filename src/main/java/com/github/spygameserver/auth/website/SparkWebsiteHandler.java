@@ -25,6 +25,8 @@ public class SparkWebsiteHandler {
     private void setupVerifyEmailPostRequest(GameDatabase gameDatabase, AuthenticationDatabase authenticationDatabase) {
         Spark.port(80);
 
+        // Set all files under the public folder, in resources, to be publicly available as a file on the web server
+        // This is used for the resetPassword.html file (form input), which redirects into the doReset post request
         Spark.staticFileLocation("/public");
 
         Spark.path("/account", () -> {

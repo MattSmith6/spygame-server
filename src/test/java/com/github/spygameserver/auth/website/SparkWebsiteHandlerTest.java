@@ -5,7 +5,7 @@ import com.github.spygameserver.auth.PlayerAuthenticationData;
 import com.github.spygameserver.database.ConnectionHandler;
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import com.github.spygameserver.database.impl.GameDatabase;
-import com.github.spygameserver.database.table.AuthenticationTable;
+import com.github.spygameserver.database.table.PlayerAuthenticationTable;
 import com.github.spygameserver.database.table.PlayerAccountTable;
 import com.github.spygameserver.player.account.AccountVerificationStatus;
 import com.github.spygameserver.player.account.PlayerAccountData;
@@ -71,7 +71,7 @@ public class SparkWebsiteHandlerTest implements DatabaseRequiredTest {
     private AuthenticationDatabase authenticationDatabase;
 
     private PlayerAccountTable playerAccountTable;
-    private AuthenticationTable authenticationTable;
+    private PlayerAuthenticationTable authenticationTable;
 
     private SparkWebsiteHandler sparkWebsiteHandler;
 

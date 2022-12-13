@@ -9,7 +9,10 @@ import spark.Response;
 import spark.Route;
 
 /**
- * A Route that
+ * A Route that checks if the username exists.
+ *
+ * On a success, this returns a JSON object that provides an exists property that is true if the username already
+ * exists, and false if the username does not already exist. On an error, the error property is set with the appropriate message.
  */
 public class CheckUsernameExistsRoute implements Route {
 

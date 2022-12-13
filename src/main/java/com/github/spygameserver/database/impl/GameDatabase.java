@@ -1,7 +1,6 @@
 package com.github.spygameserver.database.impl;
 
 import com.github.spygameserver.database.DatabaseConnectionManager;
-import com.github.spygameserver.database.table.AuthenticationTable;
 import com.github.spygameserver.database.table.GameLobbyTable;
 import com.github.spygameserver.database.table.PlayerAccountTable;
 import com.github.spygameserver.database.table.PlayerGameInfoTable;

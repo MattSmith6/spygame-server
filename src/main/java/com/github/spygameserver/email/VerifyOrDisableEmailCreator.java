@@ -2,6 +2,9 @@ package com.github.spygameserver.email;
 
 import com.github.spygameserver.util.StringUtils;
 
+/**
+ * Sends an email to the player with links to verify or disable their account.
+ */
 public class VerifyOrDisableEmailCreator extends EmailCreator {
 
 	private static final String SUBJECT_MESSAGE = "Spy Game - Verify your Account";

@@ -7,7 +7,6 @@ import com.github.glusk.srp6_variables.SRP6IntegerVariable;
 import com.github.spygameserver.DatabaseRequiredTest;
 import com.github.spygameserver.auth.PlayerAuthenticationData;
 import com.github.spygameserver.database.ConnectionHandler;
-import com.github.spygameserver.database.DatabaseCreator;
 import com.github.spygameserver.database.impl.AuthenticationDatabase;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import java.io.File;
 import java.nio.ByteOrder;
 
 /**
@@ -23,12 +21,12 @@ import java.nio.ByteOrder;
  * putting the system on the server.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class AuthenticationTableTest implements DatabaseRequiredTest {
+public class PlayerAuthenticationTableTest implements DatabaseRequiredTest {
 
     private static final int TEST_PLAYER_ID = 101;
 
     private AuthenticationDatabase authenticationDatabase;
-    private AuthenticationTable authenticationTable;
+    private PlayerAuthenticationTable authenticationTable;
     private ConnectionHandler connectionHandler;
 
     /**
